@@ -79,6 +79,3 @@ This project visualises data of various games from Steam and analyses different 
     ```
 
 - If you face any issues with missing files, ensure that the `games.json` file is located in the [scrape](http://_vscodecontentref_/4) directory.
-
-### License
-This project is licensed under the MIT License.
