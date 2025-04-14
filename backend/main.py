@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-import re
+
+from fastapi.responses import HTMLResponse
+
 import json
 from pathlib import Path
 from typing import List, Dict, Any
@@ -9,8 +11,10 @@ app = FastAPI()
 
 # Пути к файлам
 BASE_DIR = Path(__file__).parent
-DATA_FILE = BASE_DIR / "games.json"
-FRONTEND_DIR = BASE_DIR
+
+DATA_FILE = BASE_DIR / "scrape" / "games.json"
+FRONTEND_DIR = BASE_DIR.parent / "frontend"
+
 
 # Отдача статики (фронтенд)
 
@@ -46,7 +50,7 @@ async def get_wordcloud_data():
         name = game["name"]
         # Разбиваем название на слова и считаем частоту
         for word in name.split():
-            word = re.sub(r'[^a-zA-Z]', '', word).capitalize()
+            word = word.strip(".,!?\"':;()[]{}")
             if len(word) > 2:  # Игнорируем короткие слова
                 words[word] = words.get(word, 0) + 1
     
@@ -55,13 +59,14 @@ async def get_wordcloud_data():
     return wordcloud_data
 
 @app.get("/api/genres")
-async def get_genres_data():
+async def get_genre_distribution():
     """Генерирует данные для circular packing по жанрам"""
     games = load_games_data()
     genres = {}
     
     for game in games:
-        for genre in game.get("genres", []):
+        for genre in game.get("genres", []):  # Исправлено на "genres", если в вашем JSON это поле
+
             genres[genre] = genres.get(genre, 0) + 1
     
     # Сортируем по убыванию частоты
@@ -74,6 +79,35 @@ async def get_genres_data():
     }
     
     return data
+
+@app.get("/api/audience-overlap")
+def get_audience_overlap():
+    """Генерирует данные для пересечения аудитории"""
+    data = load_games_data()  # Здесь берём список всех игр
+    for game in data:
+        if game.get("audienceOverlap"):
+            center_game = {
+                "id": game["steamId"],
+                "name": game["name"]
+            }
+            overlap_nodes = [
+                {
+                    "id": g["steamId"],
+                    "name": g["name"]
+                } for g in game["audienceOverlap"]
+            ]
+            links = [
+                {
+                    "source": game["steamId"],
+                    "target": g["steamId"],
+                    "value": g["link"]
+                } for g in game["audienceOverlap"]
+            ]
+            nodes = [center_game] + overlap_nodes
+            return {"nodes": nodes, "links": links}
+        
+    return {"nodes": [], "links": []}
+
 
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
 
