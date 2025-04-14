@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+
 from fastapi.responses import HTMLResponse
+
 import json
 from pathlib import Path
 from typing import List, Dict, Any
@@ -9,8 +11,10 @@ app = FastAPI()
 
 # Пути к файлам
 BASE_DIR = Path(__file__).parent
+
 DATA_FILE = BASE_DIR / "scrape" / "games.json"
 FRONTEND_DIR = BASE_DIR.parent / "frontend"
+
 
 # Отдача статики (фронтенд)
 
@@ -62,6 +66,7 @@ async def get_genre_distribution():
     
     for game in games:
         for genre in game.get("genres", []):  # Исправлено на "genres", если в вашем JSON это поле
+
             genres[genre] = genres.get(genre, 0) + 1
     
     # Сортируем по убыванию частоты
@@ -75,6 +80,7 @@ async def get_genre_distribution():
     
     return data
 
+<<<<<<< HEAD
 @app.get("/api/audience-overlap")
 def get_audience_overlap():
     """Генерирует данные для пересечения аудитории"""
@@ -102,6 +108,7 @@ def get_audience_overlap():
             return {"nodes": nodes, "links": links}
         
     return {"nodes": [], "links": []}
+
 
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
 
