@@ -80,7 +80,6 @@ async def get_genre_distribution():
     
     return data
 
-<<<<<<< HEAD
 @app.get("/api/audience-overlap")
 def get_audience_overlap():
     """Генерирует данные для пересечения аудитории"""
