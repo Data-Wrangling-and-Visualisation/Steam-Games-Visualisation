@@ -1,174 +1,383 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Steam Games Analytics</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body { font-family: sans-serif; margin: 20px; }
-    .chart-title { font-size: 18px; margin-top: 30px; }
-    svg { border: 1px solid #ccc; margin: 20px 0; }
-    .tooltip {
-      position: absolute;
-      padding: 8px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      pointer-events: none;
-      font-size: 12px;
-      opacity: 0;
-      transition: opacity 0.2s ease-in-out;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Games Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Motiva+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.0/src/wordcloud2.min.js"></script>
+    <style>
+        body {
+            font-family: 'Motiva Sans', Arial, sans-serif;
+            background-color: #1b2838;
+            color: #c6d4df;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #171a21;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+        }
+        
+        .section {
+            background-color: #2a3f5a;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .section-title {
+            color: #67c1f5;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 500px;
+        }
+        
+        #wordcloud {
+            width: 100%;
+            height: 500px;
+            background-color: #2a3f5a;
+        }
+        
+        .game-selector {
+            margin-bottom: 20px;
+        }
+        
+        select {
+            background-color: #2a3f5a;
+            color: #c6d4df;
+            border: 1px solid #3d556e;
+            padding: 8px 12px;
+            border-radius: 3px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .game-info {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .game-image {
+            width: 180px;
+            height: 80px;
+            background-color: #000;
+            margin-right: 20px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .game-details {
+            flex: 1;
+        }
+        
+        .game-title {
+            color: #ffffff;
+            font-size: 20px;
+            margin: 0 0 10px 0;
+        }
+        
+        .game-meta {
+            color: #8f98a0;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+    </style>
 </head>
 <body>
-
-<h1>Steam Games Analytics Dashboard</h1>
-
-<h2 class="chart-title">1. Price vs Playtime</h2>
-<svg id="price-engagement" width="800" height="400"></svg>
-
-<h2 class="chart-title">2. Gender Distribution</h2>
-<svg id="gender-distribution" width="500" height="300"></svg>
-
-<h2 class="chart-title">3. Indie vs AAA Games</h2>
-<svg id="indie-vs-aaa" width="800" height="400"></svg>
-
-<div class="tooltip" id="tooltip"></div>
-
-<script>
-// Загрузка данных
-async function loadData() {
-  try {
-    const [gameData, genderData, aaaIndieData] = await Promise.all([
-      fetch('/api/game').then(res => res.json()),
-      fetch('/api/gender-distribution').then(res => res.json()),
-      fetch('/api/indie-vs-aaa').then(res => res.json())
-    ]);
-
-    renderCharts(gameData, genderData, aaaIndieData);
-  } catch (error) {
-    console.error("Error loading data:", error);
-  }
-}
-
-// Отрисовка графиков
-function renderCharts(gameData, genderData, aaaIndieData) {
-  const tooltip = d3.select("#tooltip");
-
-  // 1. Price vs Playtime
-  {
-    const margin = {top: 20, right: 30, bottom: 40, left: 60};
-    const width = 800 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
-
-    const svg = d3.select("#price-engagement");
-    svg.selectAll("*").remove();
-    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-    const x = d3.scaleLinear().domain([0, gameData.price * 1.5]).range([0, width]);
-    const y = d3.scaleLinear().domain([0, gameData.avgPlaytime * 1.5]).range([height, 0]);
-
-    g.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x));
-    g.append("g").call(d3.axisLeft(y));
-
-    g.append("circle")
-      .attr("cx", x(gameData.price))
-      .attr("cy", y(gameData.avgPlaytime))
-      .attr("r", 10)
-      .attr("fill", "steelblue")
-      .on("mouseover", (event) => {
-        tooltip.style("opacity", 1)
-          .html(`Game: ${gameData.name}<br>Price: $${gameData.price}<br>Playtime: ${gameData.avgPlaytime}h`)
-          .style("left", `${event.pageX + 10}px`)
-          .style("top", `${event.pageY - 28}px`);
-      })
-      .on("mouseout", () => tooltip.style("opacity", 0));
-  }
-
-  // 2. Gender Distribution
-  {
-    const margin = {top: 20, right: 20, bottom: 40, left: 60};
-    const width = 500 - margin.left - margin.right;
-    const height = 300 - margin.top - margin.bottom;
-
-    const svg = d3.select("#gender-distribution");
-    svg.selectAll("*").remove();
-    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-    const x = d3.scaleBand()
-      .domain(genderData.map(d => d.gender))
-      .range([0, width])
-      .padding(0.2);
-
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(genderData, d => d.count)])
-      .range([height, 0]);
-
-    g.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x));
-    g.append("g").call(d3.axisLeft(y));
-
-    g.selectAll("rect")
-      .data(genderData)
-      .enter().append("rect")
-      .attr("x", d => x(d.gender))
-      .attr("y", d => y(d.count))
-      .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d.count))
-      .attr("fill", "#fc8d62")
-      .on("mouseover", (event, d) => {
-        tooltip.style("opacity", 1)
-          .html(`${d.gender}: ${d.count.toLocaleString()}`)
-          .style("left", `${event.pageX + 10}px`)
-          .style("top", `${event.pageY - 28}px`);
-      })
-      .on("mouseout", () => tooltip.style("opacity", 0));
-  }
-
-  // 3. Indie vs AAA
-  {
-    const margin = {top: 20, right: 30, bottom: 40, left: 60};
-    const width = 800 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
-
-    const svg = d3.select("#indie-vs-aaa");
-    svg.selectAll("*").remove();
-    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-    const x = d3.scaleBand()
-      .domain(aaaIndieData.map(d => d.type))
-      .range([0, width])
-      .padding(0.3);
-
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(aaaIndieData, d => d.count)])
-      .range([height, 0]);
-
-    g.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x));
-    g.append("g").call(d3.axisLeft(y));
-
-    g.selectAll("rect")
-      .data(aaaIndieData)
-      .enter().append("rect")
-      .attr("x", d => x(d.type))
-      .attr("y", d => y(d.count))
-      .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d.count))
-      .attr("fill", d => d.type === "AAA" ? "#66c2a5" : "#8da0cb")
-      .on("mouseover", (event, d) => {
-        tooltip.style("opacity", 1)
-          .html(`${d.type} Games: ${d.count}`)
-          .style("left", `${event.pageX + 10}px`)
-          .style("top", `${event.pageY - 28}px`);
-      })
-      .on("mouseout", () => tooltip.style("opacity", 0));
-  }
-}
-
-// Запуск
-document.addEventListener("DOMContentLoaded", () => {
-  loadData();
-});
-</script>
+    <header>
+        <div class="container">
+            <h1>Steam Games Analytics</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="section">
+            <h2 class="section-title">Game Titles Word Cloud</h2>
+            <div id="wordcloud"></div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Genres Distribution</h2>
+            <div id="genres-chart" class="chart-container"></div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Game Analytics</h2>
+            <div class="game-selector">
+                <select id="game-select">
+                    <option value="">Select a game...</option>
+                </select>
+            </div>
+            
+            <div id="game-display" style="display: none;">
+                <div class="game-info">
+                    <div class="game-image" id="game-image"></div>
+                    <div class="game-details">
+                        <h3 class="game-title" id="game-title"></h3>
+                        <p class="game-meta" id="game-release"></p>
+                        <p class="game-meta" id="game-price"></p>
+                    </div>
+                </div>
+                
+                <div id="radar-chart" class="chart-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Загрузка данных и инициализация графиков
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Загружаем данные об играх
+            const games = await fetch('/api/games').then(res => res.json());
+            
+            // Инициализация wordcloud
+            initWordCloud();
+            
+            // Инициализация circular packing для жанров
+            initGenresChart();
+            
+            // Заполняем выпадающий список игр
+            const gameSelect = document.getElementById('game-select');
+            games.forEach(game => {
+                const option = document.createElement('option');
+                option.value = game.steamId;
+                option.textContent = game.name;
+                gameSelect.appendChild(option);
+            });
+            
+            // Обработчик выбора игры
+            gameSelect.addEventListener('change', async function() {
+                const steamId = this.value;
+                if (!steamId) {
+                    document.getElementById('game-display').style.display = 'none';
+                    return;
+                }
+                
+                const game = await fetch(`/api/games/${steamId}`).then(res => res.json());
+                displayGameInfo(game);
+                initRadarChart(game);
+            });
+        });
+        
+        // Word Cloud
+        async function initWordCloud() {
+            const wordcloudData = await fetch('/api/wordcloud').then(res => res.json());
+            
+            WordCloud(document.getElementById('wordcloud'), {
+                list: wordcloudData.map(item => [item.text, item.value]),
+                gridSize: 10,
+                weightFactor: 5,
+                fontFamily: 'Motiva Sans, Arial, sans-serif',
+                color: function (word, weight) {
+                    return weight > 15 ? '#67c1f5' : 
+                           weight > 10 ? '#c6d4df' : 
+                           weight > 5 ? '#8f98a0' : '#626b75';
+                },
+                backgroundColor: '#2a3f5a',
+                rotateRatio: 0.5,
+                minSize: 4
+            });
+        }
+        
+        // Circular Packing для жанров
+        async function initGenresChart() {
+            const genresData = await fetch('/api/genres').then(res => res.json());
+            
+            const chart = echarts.init(document.getElementById('genres-chart'));
+            
+            const option = {
+                backgroundColor: 'transparent',
+                series: {
+                    type: 'sunburst',
+                    data: genresData.children,
+                    radius: [0, '90%'],
+                    label: {
+                        color: '#c6d4df',
+                        fontSize: 14
+                    },
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = [
+                                '#1a9fff', '#67c1f5', '#417a9b', 
+                                '#4b6b82', '#5d7b93', '#6d8ba3'
+                            ];
+                            return colors[params.dataIndex % colors.length];
+                        },
+                        borderWidth: 2,
+                        borderColor: '#1b2838'
+                    },
+                    levels: [
+                        {},
+                        {
+                            r0: '15%',
+                            r: '45%',
+                            itemStyle: {
+                                borderWidth: 2
+                            },
+                            label: {
+                                rotate: 'tangential'
+                            }
+                        },
+                        {
+                            r0: '45%',
+                            r: '80%',
+                            label: {
+                                align: 'right'
+                            }
+                        },
+                        {
+                            r0: '80%',
+                            r: '90%',
+                            label: {
+                                position: 'outside',
+                                padding: 3,
+                                silent: false
+                            },
+                            itemStyle: {
+                                borderWidth: 3
+                            }
+                        }
+                    ]
+                }
+            };
+            
+            chart.setOption(option);
+            
+            window.addEventListener('resize', function() {
+                chart.resize();
+            });
+        }
+        
+        // Отображение информации об игре
+        function displayGameInfo(game) {
+            document.getElementById('game-display').style.display = 'block';
+            document.getElementById('game-title').textContent = game.name;
+            document.getElementById('game-release').textContent = `Release Date: ${game.releaseDate}`;
+            document.getElementById('game-price').textContent = `Price: $${game.price}`;
+            
+            // Здесь можно добавить изображение игры, если есть URL
+            // document.getElementById('game-image').style.backgroundImage = `url(${game.imageUrl})`;
+        }
+        
+        // Radar Chart для анализа игры
+        function initRadarChart(game) {
+            const chart = echarts.init(document.getElementById('radar-chart'));
+            
+            // Нормализуем данные для радарной диаграммы
+            const maxValues = {
+                price: 60,  // Максимальная цена для нормализации
+                reviews: Math.max(game.reviews, 500000),
+                reviewScore: 100,
+                followers: Math.max(game.followers, 1000000),
+                avgPlaytime: Math.max(game.avgPlaytime, 100)
+            };
+            
+            const indicator = [
+                { name: 'Price (lower is better)', max: maxValues.price },
+                { name: 'Reviews', max: maxValues.reviews },
+                { name: 'Score', max: maxValues.reviewScore },
+                { name: 'Followers', max: maxValues.followers },
+                { name: 'Avg Playtime', max: maxValues.avgPlaytime }
+            ];
+            
+            const data = [
+                {
+                    value: [
+                        maxValues.price - game.price,  // Инвертируем цену (чем ниже тем лучше)
+                        game.reviews,
+                        game.reviewScore,
+                        game.followers,
+                        game.avgPlaytime
+                    ],
+                    name: game.name
+                }
+            ];
+            
+            const option = {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    data: [game.name],
+                    textStyle: {
+                        color: '#c6d4df'
+                    },
+                    bottom: 0
+                },
+                radar: {
+                    indicator: indicator,
+                    shape: 'circle',
+                    splitNumber: 5,
+                    axisName: {
+                        color: '#c6d4df',
+                        fontSize: 12
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: 'rgba(198, 212, 223, 0.3)'
+                        }
+                    },
+                    splitArea: {
+                        show: false
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(198, 212, 223, 0.3)'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: game.name,
+                        type: 'radar',
+                        data: data,
+                        areaStyle: {
+                            color: 'rgba(103, 193, 245, 0.4)'
+                        },
+                        lineStyle: {
+                            color: 'rgba(103, 193, 245, 0.8)',
+                            width: 2
+                        },
+                        symbolSize: 6,
+                        itemStyle: {
+                            color: '#67c1f5'
+                        }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+            
+            window.addEventListener('resize', function() {
+                chart.resize();
+            });
+        }
+    </script>
 </body>
 </html>
