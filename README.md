@@ -5,12 +5,19 @@ This project visualises data of various games from Steam and analyses different 
 - **Denis Troegubov (DS-01)**  
   Checkpoint 1:  
   - Scraped and cleaned data from the websites.
+  
+  Checkpoint 2:  
+  - Wrote part of backend and frontend. 
 - **Diana Tsoi (DS-02)**  
   Checkpoint 1:  
   - Made Exploratory Data Analysis (EDA) and analyzed trends.
 - **Victor Mazanov (DS-02)**  
   Checkpoint 1:  
-  - Made a list of possible trends, scraped data from the websites.
+  - Made a list of possible trends, scraped data from the websites.  
+
+
+  Checkpoint 2:  
+  - Wrote part of backend and frontend.
 
 ## Setup and Run Instructions
 
