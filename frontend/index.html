@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Steam Games Analytics</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .chart-title { font-size: 18px; margin-top: 30px; }
+    svg { border: 1px solid #ccc; margin: 20px 0; }
+    .tooltip {
+      position: absolute;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      pointer-events: none;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Steam Games Analytics Dashboard</h1>
+
+<h2 class="chart-title">1. Price vs Playtime</h2>
+<svg id="price-engagement" width="800" height="400"></svg>
+
+<h2 class="chart-title">2. Gender Distribution</h2>
+<svg id="gender-distribution" width="500" height="300"></svg>
+
+<h2 class="chart-title">3. Indie vs AAA Games</h2>
+<svg id="indie-vs-aaa" width="800" height="400"></svg>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// Загрузка данных
+async function loadData() {
+  try {
+    const [gameData, genderData, aaaIndieData] = await Promise.all([
+      fetch('/api/game').then(res => res.json()),
+      fetch('/api/gender-distribution').then(res => res.json()),
+      fetch('/api/indie-vs-aaa').then(res => res.json())
+    ]);
+
+    renderCharts(gameData, genderData, aaaIndieData);
+  } catch (error) {
+    console.error("Error loading data:", error);
+  }
+}
+
+// Отрисовка графиков
+function renderCharts(gameData, genderData, aaaIndieData) {
+  const tooltip = d3.select("#tooltip");
+
+  // 1. Price vs Playtime
+  {
+    const margin = {top: 20, right: 30, bottom: 40, left: 60};
+    const width = 800 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+
+    const svg = d3.select("#price-engagement");
+    svg.selectAll("*").remove();
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear().domain([0, gameData.price * 1.5]).range([0, width]);
+    const y = d3.scaleLinear().domain([0, gameData.avgPlaytime * 1.5]).range([height, 0]);
+
+    g.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x));
+    g.append("g").call(d3.axisLeft(y));
+
+    g.append("circle")
+      .attr("cx", x(gameData.price))
+      .attr("cy", y(gameData.avgPlaytime))
+      .attr("r", 10)
+      .attr("fill", "steelblue")
+      .on("mouseover", (event) => {
+        tooltip.style("opacity", 1)
+          .html(`Game: ${gameData.name}<br>Price: $${gameData.price}<br>Playtime: ${gameData.avgPlaytime}h`)
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 28}px`);
+      })
+      .on("mouseout", () => tooltip.style("opacity", 0));
+  }
+
+  // 2. Gender Distribution
+  {
+    const margin = {top: 20, right: 20, bottom: 40, left: 60};
+    const width = 500 - margin.left - margin.right;
+    const height = 300 - margin.top - margin.bottom;
+
+    const svg = d3.select("#gender-distribution");
+    svg.selectAll("*").remove();
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleBand()
+      .domain(genderData.map(d => d.gender))
+      .range([0, width])
+      .padding(0.2);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(genderData, d => d.count)])
+      .range([height, 0]);
+
+    g.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x));
+    g.append("g").call(d3.axisLeft(y));
+
+    g.selectAll("rect")
+      .data(genderData)
+      .enter().append("rect")
+      .attr("x", d => x(d.gender))
+      .attr("y", d => y(d.count))
+      .attr("width", x.bandwidth())
+      .attr("height", d => height - y(d.count))
+      .attr("fill", "#fc8d62")
+      .on("mouseover", (event, d) => {
+        tooltip.style("opacity", 1)
+          .html(`${d.gender}: ${d.count.toLocaleString()}`)
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 28}px`);
+      })
+      .on("mouseout", () => tooltip.style("opacity", 0));
+  }
+
+  // 3. Indie vs AAA
+  {
+    const margin = {top: 20, right: 30, bottom: 40, left: 60};
+    const width = 800 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+
+    const svg = d3.select("#indie-vs-aaa");
+    svg.selectAll("*").remove();
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleBand()
+      .domain(aaaIndieData.map(d => d.type))
+      .range([0, width])
+      .padding(0.3);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(aaaIndieData, d => d.count)])
+      .range([height, 0]);
+
+    g.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x));
+    g.append("g").call(d3.axisLeft(y));
+
+    g.selectAll("rect")
+      .data(aaaIndieData)
+      .enter().append("rect")
+      .attr("x", d => x(d.type))
+      .attr("y", d => y(d.count))
+      .attr("width", x.bandwidth())
+      .attr("height", d => height - y(d.count))
+      .attr("fill", d => d.type === "AAA" ? "#66c2a5" : "#8da0cb")
+      .on("mouseover", (event, d) => {
+        tooltip.style("opacity", 1)
+          .html(`${d.type} Games: ${d.count}`)
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 28}px`);
+      })
+      .on("mouseout", () => tooltip.style("opacity", 0));
+  }
+}
+
+// Запуск
+document.addEventListener("DOMContentLoaded", () => {
+  loadData();
+});
+</script>
+</body>
+</html>
