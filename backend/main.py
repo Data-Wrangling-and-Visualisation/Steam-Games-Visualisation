@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+import re
 import json
 from pathlib import Path
 from typing import List, Dict, Any
@@ -9,8 +9,8 @@ app = FastAPI()
 
 # Пути к файлам
 BASE_DIR = Path(__file__).parent
-DATA_FILE = BASE_DIR / "scrape" / "games.json"
-FRONTEND_DIR = BASE_DIR.parent / "frontend"
+DATA_FILE = BASE_DIR / "games.json"
+FRONTEND_DIR = BASE_DIR
 
 # Отдача статики (фронтенд)
 
@@ -46,7 +46,7 @@ async def get_wordcloud_data():
         name = game["name"]
         # Разбиваем название на слова и считаем частоту
         for word in name.split():
-            word = word.strip(".,!?\"':;()[]{}")
+            word = re.sub(r'[^a-zA-Z]', '', word).capitalize()
             if len(word) > 2:  # Игнорируем короткие слова
                 words[word] = words.get(word, 0) + 1
     
