@@ -107,6 +107,53 @@
             font-size: 14px;
             margin: 5px 0;
         }
+
+        .year-input-wrapper {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .year-label {
+            color: #c6d4df;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .year-input {
+            background-color: #1b2838;
+            border: 1px solid #3c6e94;
+            color: #c6d4df;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            width: 120px;
+            transition: border-color 0.3s;
+        }
+
+        .year-input:focus {
+            border-color: #67c1f5;
+        }
+
+        .year-button {
+            background-color: #67c1f5;
+            color: #1b2838;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .year-button:hover {
+            background-color: #4aa3e0;
+        }
+
         
         /* Новые стили для двухколоночного макета */
         .flex-container {
@@ -249,12 +296,45 @@
             margin-bottom: 5px;
             color: #67c1f5;
         }
+
+        .chart-row {
+            display: flex;
+            flex-wrap: nowrap; /* prevent wrapping */
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 20px;
+        }
+
+        .side-chart {
+            width: 50%; /* ensure both take 50% */
+            height: 500px;
+            border-radius: 8px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .site-title {
+            font-family: 'Segoe UI', sans-serif;
+            color: #c6d4df;
+            font-size: 32px;
+            margin: 20px 0;
+        }
+
+        .steam-logo {
+            width: 36px;
+            height: 36px;
+            margin-right: 12px;
+            filter: brightness(1.2); /* optional: boost visibility */
+        }
+
     </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>Steam Games Analytics</h1>
+            <h1 class="site-title">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg" alt="Steam Logo" class="steam-logo">
+                Steam Games Analytics
+            </h1>
         </div>
     </header>
     
@@ -266,12 +346,15 @@
         
         <div class="section">
             <h2 class="section-title">Genres Distribution</h2>
-            <div id="genres-chart" class="chart-container"></div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title">Genres Bubble Chart (All Games)</h2>
-            <div id="genres-bubble" class="chart-container"></div>
+            <div class="year-input-wrapper">
+                <label for="year-input" class="year-label">Enter Year:</label>
+                <input type="number" id="year-input" class="year-input" min="1980" max="2100" placeholder="e.g. 2020">
+                <button id="load-genres-btn" class="year-button">Load</button>
+            </div>
+            <div class="chart-row">
+                <div id="genres-chart" class="chart-container side-chart"></div>
+                <div id="tags-bubble" class="chart-container side-chart"></div>
+            </div>
         </div>
         
         <div class="section">
@@ -284,7 +367,6 @@
             
             <div id="game-display" style="display: none;">
                 <div class="game-info">
-                    <div class="game-image" id="game-image"></div>
                     <div class="game-details">
                         <h3 class="game-title" id="game-title"></h3>
                         <p class="game-meta" id="game-release"></p>
@@ -496,58 +578,82 @@
         }
         
         // Circular Packing для жанров
-        async function initGenresChart() {
-            const genresData = await fetch('/api/genres').then(res => res.json());
-            
+        async function initGenresChart(year = null) {
+            let url = '/api/genres';
+            if (year) {
+                url += `?year=${year}`;
+            }
+
+            const genresData = await fetch(url).then(res => res.json());
+
             const chart = echarts.init(document.getElementById('genres-chart'));
             
+            const steamColors = [
+                '#67c1f5', '#1a9fff', '#4b6b82', '#5d7b93',
+                '#66a1c9', '#417a9b', '#9ecdf2', '#3e6b89',
+                '#7aa8d4', '#2a475e', '#5c94bd'
+            ];
+
+            // Assign a color to each genre before charting
+            const coloredData = genresData.children.map((genre, index) => ({
+                ...genre,
+                itemStyle: {
+                    color: steamColors[index % steamColors.length],
+                    borderWidth: 2,
+                    borderColor: '#1b2838'
+                }
+            }));
+
             const option = {
                 backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function (info) {
+                        return `<strong style="color:#67c1f5;">${info.name}</strong><br>Games: ${info.value}`;
+                    },
+                    backgroundColor: '#1b2838',
+                    borderColor: '#67c1f5',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: '#c6d4df'
+                    }
+                },
                 series: {
                     type: 'sunburst',
-                    data: genresData.children,
-                    radius: [0, '90%'],
+                    data: coloredData,
+                    radius: [0, '85%'],
+                    sort: null,
+                    emphasis: {
+                        focus: 'ancestor'
+                    },
                     label: {
                         color: '#c6d4df',
-                        fontSize: 14
-                    },
-                    itemStyle: {
-                        color: function(params) {
-                            const colors = [
-                                '#1a9fff', '#67c1f5', '#417a9b', 
-                                '#4b6b82', '#5d7b93', '#6d8ba3'
-                            ];
-                            return colors[params.dataIndex % colors.length];
-                        },
-                        borderWidth: 2,
-                        borderColor: '#1b2838'
+                        fontSize: 14,
+                        rotate: 'radial'
                     },
                     levels: [
                         {},
                         {
                             r0: '15%',
-                            r: '45%',
-                            itemStyle: {
-                                borderWidth: 2
-                            },
-                            label: {
-                                rotate: 'tangential'
-                            }
+                            r: '35%',
+                            label: { rotate: 'tangential' },
+                            itemStyle: { borderWidth: 2 }
                         },
                         {
-                            r0: '45%',
-                            r: '80%',
-                            label: {
-                                align: 'right'
-                            }
+                            r0: '35%',
+                            r: '65%',
+                            label: { align: 'right' },
+                            itemStyle: { borderWidth: 2 }
                         },
                         {
-                            r0: '80%',
-                            r: '90%',
+                            r0: '65%',
+                            r: '85%',
                             label: {
                                 position: 'outside',
                                 padding: 3,
-                                silent: false
+                                color: '#67c1f5',
+                                fontWeight: 'bold',
+                                fontSize: 13
                             },
                             itemStyle: {
                                 borderWidth: 3
@@ -556,10 +662,10 @@
                     ]
                 }
             };
-            
+
             chart.setOption(option);
-            
-            window.addEventListener('resize', function() {
+
+            window.addEventListener('resize', function () {
                 chart.resize();
             });
         }
@@ -704,9 +810,13 @@
         }
 
         // D3.js Circular Packing для жанров всех игр
-        async function loadGenreData() {
-            const genresData = await fetch('/api/genres').then(res => res.json());
-            renderGenreBubbleChart(genresData, "genres-bubble");
+        async function loadGenreData(year = null) {
+            let url = '/api/tags';
+            if (year) {
+                url += `?year=${year}`;
+            }
+            const tagsData = await fetch(url).then(res => res.json());
+            renderGenreBubbleChart(tagsData, "tags-bubble");
         }
         
         // D3.js Circular Packing для жанров выбранной игры
@@ -947,6 +1057,17 @@
                     });
             }
         }
+        document.getElementById('load-genres-btn').addEventListener('click', () => {
+            const yearInput = document.getElementById('year-input').value;
+            const year = yearInput.trim() === '' ? null : parseInt(yearInput);
+            initGenresChart(year);
+            loadGenreData(year);
+        });
+        document.getElementById('year-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('load-genres-btn').click();
+            }
+        });
     </script>
 </body>
 </html>

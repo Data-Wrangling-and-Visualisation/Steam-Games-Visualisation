@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
+from fastapi import Query
 
 from fastapi.responses import HTMLResponse
 
 import json
+import re
 from pathlib import Path
 from typing import List, Dict, Any
 import math
@@ -14,6 +16,7 @@ app = FastAPI()
 BASE_DIR = Path(__file__).parent
 
 DATA_FILE = BASE_DIR / "scrape" / "games.json"
+LARGE_DATA_FILE = BASE_DIR / "scrape" / "games_large.json"
 FRONTEND_DIR = BASE_DIR.parent / "frontend"
 
 
@@ -25,6 +28,14 @@ def load_games_data() -> List[Dict[str, Any]]:
         raise HTTPException(status_code=500, detail="Games data file not found")
     
     with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def load_large_games_data() -> List[Dict[str, Any]]:
+    """Загружает данные об играх из JSON файла"""
+    if not LARGE_DATA_FILE.exists():
+        raise HTTPException(status_code=500, detail="Games data file not found")
+    
+    with open(LARGE_DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
 @app.get("/api/games")
@@ -44,15 +55,15 @@ async def get_game(steam_id: str):
 @app.get("/api/wordcloud")
 async def get_wordcloud_data():
     """Генерирует данные для wordcloud из названий игр"""
-    games = load_games_data()
+    games = load_large_games_data()
     words = {}
     
     for game in games:
         name = game["name"]
         # Разбиваем название на слова и считаем частоту
         for word in name.split():
-            word = word.strip(".,!?\"':;()[]{}")
-            if len(word) > 2:  # Игнорируем короткие слова
+            word = re.sub(r'[^a-zA-Zа-яА-Я]', '', word).capitalize()
+            if len(word) > 2 and word != "The":  # Игнорируем короткие слова
                 words[word] = words.get(word, 0) + 1
     
     # Преобразуем в формат для wordcloud
@@ -60,26 +71,54 @@ async def get_wordcloud_data():
     return wordcloud_data
 
 @app.get("/api/genres")
-async def get_genre_distribution():
-    """Генерирует данные для circular packing по жанрам"""
+async def get_genre_distribution(year: int = Query(None, description="Filter games by release year")):
+    """Генерирует данные для circular packing по жанрам, опционально фильтруя по году"""
     games = load_games_data()
     genres = {}
-    
-    for game in games:
-        for genre in game.get("genres", []):  # Исправлено на "genres", если в вашем JSON это поле
 
+    for game in games:
+        if year and "releaseDate" in game:
+            try:
+                game_year = int(game["releaseDate"][-4:])
+            except:
+                continue
+            if game_year != year:
+                continue
+
+        for genre in game.get("genres", []):
             genres[genre] = genres.get(genre, 0) + 1
-    
-    # Сортируем по убыванию частоты
+
     sorted_genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
     
-    # Создаем структуру для circular packing
-    data = {
+    return {
         "name": "genres",
         "children": [{"name": genre, "value": count} for genre, count in sorted_genres]
     }
     
-    return data
+@app.get("/api/tags")
+async def get_tag_distribution(year: int = Query(None, description="Filter games by release year")):
+    """"""
+    games = load_games_data()
+    tags = {}
+
+    for game in games:
+        if year and "releaseDate" in game:
+            try:
+                game_year = int(game["releaseDate"][-4:])
+            except:
+                continue
+            if game_year != year:
+                continue
+
+        for genre in game.get("tags", []):
+            tags[genre] = tags.get(genre, 0) + 1
+
+    sorted_tags = sorted(tags.items(), key=lambda x: x[1], reverse=True)
+    
+    return {
+        "name": "tags",
+        "children": [{"name": tag, "value": count} for tag, count in sorted_tags]
+    }
 
 @app.get("/api/genres/{steam_id}")
 async def get_game_genre_distribution(steam_id: str):
