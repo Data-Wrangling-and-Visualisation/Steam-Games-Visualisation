@@ -524,6 +524,52 @@
             filter: brightness(1.2); /* optional: boost visibility */
         }
 
+        .year-input-wrapper {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .year-label {
+            color: #c6d4df;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .year-input {
+            background-color: #1b2838;
+            border: 1px solid #3c6e94;
+            color: #c6d4df;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            width: 120px;
+            transition: border-color 0.3s;
+        }
+
+        .year-input:focus {
+            border-color: #67c1f5;
+        }
+
+        .year-button {
+            background-color: #67c1f5;
+            color: #1b2838;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .year-button:hover {
+            background-color: #4aa3e0;
+        }
+
     </style>
 </head>
 <body>
@@ -543,7 +589,7 @@
         </div>
         
         <div class="section">
-            <h2 class="section-title">Genres Distribution</h2>
+            <h2 class="section-title">Genres & Tags Distribution</h2>
             <div class="year-input-wrapper">
                 <label for="year-input" class="year-label">Enter Year:</label>
                 <input type="number" id="year-input" class="year-input" min="1980" max="2100" placeholder="e.g. 2020">
@@ -600,7 +646,7 @@
                         <div id="radar-chart" class="chart-container"></div>
                     </div>
                     <div class="flex-item">
-                        <h3 class="section-title">Game Genres</h3>
+                        <h3 class="section-title">Game Tags</h3>
                         <div id="game-genres-bubble" class="chart-container"></div>
                     </div>
                 </div>
@@ -871,8 +917,12 @@
         }
         
         // Circular Packing для жанров
-        async function initGenresChart() {
-            const genresData = await fetch('/api/genres').then(res => res.json());
+        async function initGenresChart(year = null) {
+            let url = '/api/genres';
+            if (year) {
+                url += `?year=${year}`;
+            }
+            const genresData = await fetch(url).then(res => res.json());
             
             const chart = echarts.init(document.getElementById('genres-chart'));
             
@@ -972,7 +1022,7 @@
             
             // Нормализуем данные для радарной диаграммы
             const maxValues = {
-                price: 60,  // Максимальная цена для нормализации
+                price: 100,  // Максимальная цена для нормализации
                 reviews: Math.max(game.reviews, 500000),
                 reviewScore: 100,
                 followers: Math.max(game.followers,  500000),
@@ -982,7 +1032,7 @@
             };
             
             const indicator = [
-                { name: 'Price (lower is better)', max: maxValues.price },
+                { name: 'Price Score', max: maxValues.price },
                 { name: 'Reviews', max: maxValues.reviews },
                 { name: 'Score', max: maxValues.reviewScore },
                 { name: 'Followers', max: maxValues.followers },
@@ -1112,10 +1162,10 @@
                 // Очищаем предыдущую визуализацию
                 d3.select("#game-genres-bubble svg").remove();
                 
-                const genresData = await fetch(`/api/genres/${steamId}`).then(res => res.json());
-                renderGenreBubbleChart(genresData, "game-genres-bubble");
+                const tagsData = await fetch(`/api/tags/${steamId}`).then(res => res.json());
+                renderGenreBubbleChart(tagsData, "game-genres-bubble");
             } catch (error) {
-                console.error("Error loading game genres:", error);
+                console.error("Error loading game tags:", error);
             }
         }
         
@@ -2151,6 +2201,17 @@
                 .attr("fill", "#c6d4df")
                 .text(title);
         }
+        document.getElementById('load-genres-btn').addEventListener('click', () => {
+            const yearInput = document.getElementById('year-input').value;
+            const year = yearInput.trim() === '' ? null : parseInt(yearInput);
+            initGenresChart(year);
+            loadGenreData(year);
+        });
+        document.getElementById('year-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('load-genres-btn').click();
+            }
+        });
     </script>
 </body>
 </html>

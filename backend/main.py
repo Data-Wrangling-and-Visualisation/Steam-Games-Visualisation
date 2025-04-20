@@ -16,9 +16,9 @@ app = FastAPI()
 # Пути к файлам
 BASE_DIR = Path(__file__).parent
 
-DATA_FILE = BASE_DIR / "scrape" / "games.json"
-LARGE_DATA_FILE = BASE_DIR / "scrape" / "games_large.json"
-FRONTEND_DIR = BASE_DIR.parent / "frontend"
+DATA_FILE = BASE_DIR / "games.json"
+LARGE_DATA_FILE = BASE_DIR / "games_large.json"
+FRONTEND_DIR = BASE_DIR
 
 
 # Отдача статики (фронтенд)
@@ -121,7 +121,7 @@ async def get_tag_distribution(year: int = Query(None, description="Filter games
         "children": [{"name": tag, "value": count} for tag, count in sorted_tags]
     }
 
-@app.get("/api/genres/{steam_id}")
+@app.get("/api/tags/{steam_id}")
 async def get_game_genre_distribution(steam_id: str):
     """Генерирует данные для circular packing по жанрам конкретной игры"""
     games = load_games_data()
@@ -137,8 +137,8 @@ async def get_game_genre_distribution(steam_id: str):
     
     # Создаем структуру для circular packing только для жанров выбранной игры
     data = {
-        "name": "genres",
-        "children": [{"name": genre, "value": 1} for genre in game.get("genres", [])]
+        "name": "tags",
+        "children": [{"name": tag, "value": 1} for tag in game.get("tags", [])]
     }
     
     return data
