@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+from fastapi import Query
 
 from fastapi.responses import HTMLResponse
 
@@ -69,26 +70,29 @@ async def get_wordcloud_data():
     return wordcloud_data
 
 @app.get("/api/genres")
-async def get_genre_distribution():
-    """Генерирует данные для circular packing по жанрам"""
+async def get_genre_distribution(year: int = Query(None, description="Filter games by release year")):
+    """Генерирует данные для circular packing по жанрам, опционально фильтруя по году"""
     games = load_games_data()
     genres = {}
-    
-    for game in games:
-        for genre in game.get("genres", []):  # Исправлено на "genres", если в вашем JSON это поле
 
+    for game in games:
+        if year and "releaseDate" in game:
+            try:
+                game_year = int(game["releaseDate"][-4:])
+            except:
+                continue
+            if game_year != year:
+                continue
+
+        for genre in game.get("genres", []):
             genres[genre] = genres.get(genre, 0) + 1
-    
-    # Сортируем по убыванию частоты
+
     sorted_genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
     
-    # Создаем структуру для circular packing
-    data = {
+    return {
         "name": "genres",
         "children": [{"name": genre, "value": count} for genre, count in sorted_genres]
     }
-    
-    return data
 
 @app.get("/api/audience-overlap")
 def get_audience_overlap():
