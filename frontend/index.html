@@ -1,5 +1,4 @@
-<!DOCTYPE
-html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -29,6 +28,7 @@ html>
             padding: 20px 0;
             margin-bottom: 30px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: center; /* Центрирование заголовка */
         }
         
         h1 {
@@ -107,6 +107,148 @@ html>
             font-size: 14px;
             margin: 5px 0;
         }
+        
+        /* Новые стили для двухколоночного макета */
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .flex-item {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .chart-title {
+            color: #67c1f5;
+            margin: 20px 0;
+            font-size: 22px;
+            text-align: center;
+        }
+        
+        #audience-network, #game-audience-network {
+            width: 100%;
+            height: 500px;
+            background-color: #2a3f5a;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            position: relative; /* Для правильного позиционирования зума */
+            overflow: hidden; /* Чтобы содержимое не выходило за границы при зуме */
+        }
+        
+        /* Стили для слайдера процентов */
+        .percentage-slider-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .percentage-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 10px;
+            border-radius: 5px;
+            background: #1b2838;
+            outline: none;
+        }
+        
+        .percentage-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #67c1f5;
+            cursor: pointer;
+        }
+        
+        .percentage-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #67c1f5;
+            cursor: pointer;
+        }
+        
+        .percentage-value {
+            font-size: 16px;
+            color: #67c1f5;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .network-stats {
+            font-size: 14px;
+            color: #8f98a0;
+            margin-bottom: 15px;
+        }
+        
+        /* Стили для слайдера масштаба */
+        .zoom-slider-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .zoom-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 10px;
+            border-radius: 5px;
+            background: #1b2838;
+            outline: none;
+        }
+        
+        .zoom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #67c1f5;
+            cursor: pointer;
+        }
+        
+        .zoom-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #67c1f5;
+            cursor: pointer;
+        }
+        
+        .zoom-value {
+            font-size: 16px;
+            color: #67c1f5;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        /* Стили для контролов визуализации */
+        .visualization-controls {
+            background-color: #1b2838;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .control-group {
+            margin-bottom: 10px;
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #67c1f5;
+        }
     </style>
 </head>
 <body>
@@ -128,10 +270,9 @@ html>
         </div>
 
         <div class="section">
-            <h2 class="section-title">Genres Bubble Chart</h2>
+            <h2 class="section-title">Genres Bubble Chart (All Games)</h2>
             <div id="genres-bubble" class="chart-container"></div>
         </div>
-
         
         <div class="section">
             <h2 class="section-title">Game Analytics</h2>
@@ -151,14 +292,67 @@ html>
                     </div>
                 </div>
                 
-                <div id="radar-chart" class="chart-container"></div>
+                <!-- Двухколоночный макет для радара и жанров -->
+                <div class="flex-container">
+                    <div class="flex-item">
+                        <h3 class="section-title">Game Stats</h3>
+                        <div id="radar-chart" class="chart-container"></div>
+                    </div>
+                    <div class="flex-item">
+                        <h3 class="section-title">Game Genres</h3>
+                        <div id="game-genres-bubble" class="chart-container"></div>
+                    </div>
+                </div>
+                
+                <!-- Аудитория для выбранной игры -->
+                <h3 class="section-title">Game Audience Overlap</h3>
+                <div class="visualization-controls">
+                    <div class="control-group">
+                        <label class="control-label" for="game-zoom-slider">Zoom Level:</label>
+                        <div class="zoom-slider-container">
+                            <span>-</span>
+                            <input type="range" min="0.1" max="3" step="0.1" value="1" class="zoom-slider" id="game-zoom-slider">
+                            <span>+</span>
+                            <span class="zoom-value" id="game-zoom-value">100%</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="game-audience-network"></div>
             </div>
         </div>
+        
+        <div class="section">
+            <h2 class="section-title">Audience Overlap Network (All Games)</h2>
+            
+            <!-- Контролы визуализации -->
+            <div class="visualization-controls">
+                <div class="control-group">
+                    <label class="control-label" for="percentage-slider">Percentage of games to display:</label>
+                    <div class="percentage-slider-container">
+                        <span>10%</span>
+                        <input type="range" min="10" max="100" step="10" value="100" class="percentage-slider" id="percentage-slider">
+                        <span>100%</span>
+                        <span class="percentage-value" id="percentage-value">100%</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label" for="zoom-slider">Zoom Level:</label>
+                    <div class="zoom-slider-container">
+                        <span>-</span>
+                        <input type="range" min="0.1" max="3" step="0.1" value="1" class="zoom-slider" id="zoom-slider">
+                        <span>+</span>
+                        <span class="zoom-value" id="zoom-value">100%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Статистика сети -->
+            <div class="network-stats" id="network-stats"></div>
+            
+            <div id="audience-network"></div>
+        </div>
     </div>
-    
-
-    <h2 class="chart-title">Audience Overlap Network</h2>
-    <div id="audience-network"></div>
 
     <script>
         // Загрузка данных и инициализация графиков
@@ -171,6 +365,59 @@ html>
             
             // Инициализация circular packing для жанров
             initGenresChart();
+            
+            // Инициализация bubble chart для жанров
+            loadGenreData();
+            
+            // Инициализация сети аудитории для всех игр
+            loadAudienceOverlap(100, 1); // По умолчанию 100% и масштаб 1
+            
+            // Обработчик изменения слайдера процентов
+            const percentageSlider = document.getElementById('percentage-slider');
+            const percentageValue = document.getElementById('percentage-value');
+            
+            percentageSlider.addEventListener('input', function() {
+                const value = this.value;
+                percentageValue.textContent = `${value}%`;
+            });
+            
+            percentageSlider.addEventListener('change', function() {
+                const value = this.value;
+                const zoomValue = document.getElementById('zoom-slider').value;
+                loadAudienceOverlap(value, zoomValue);
+            });
+            
+            // Обработчик изменения слайдера масштаба для общей сети
+            const zoomSlider = document.getElementById('zoom-slider');
+            const zoomValue = document.getElementById('zoom-value');
+            
+            zoomSlider.addEventListener('input', function() {
+                const value = this.value;
+                const zoomPercent = Math.round(value * 100);
+                zoomValue.textContent = `${zoomPercent}%`;
+                
+                // Применяем масштаб к существующей визуализации
+                applyZoom('audience-network', value);
+            });
+            
+            zoomSlider.addEventListener('change', function() {
+                const value = this.value;
+                const percentValue = document.getElementById('percentage-slider').value;
+                loadAudienceOverlap(percentValue, value);
+            });
+            
+            // Обработчик изменения слайдера масштаба для сети конкретной игры
+            const gameZoomSlider = document.getElementById('game-zoom-slider');
+            const gameZoomValue = document.getElementById('game-zoom-value');
+            
+            gameZoomSlider.addEventListener('input', function() {
+                const value = this.value;
+                const zoomPercent = Math.round(value * 100);
+                gameZoomValue.textContent = `${zoomPercent}%`;
+                
+                // Применяем масштаб к существующей визуализации
+                applyZoom('game-audience-network', value);
+            });
             
             // Заполняем выпадающий список игр
             const gameSelect = document.getElementById('game-select');
@@ -192,8 +439,41 @@ html>
                 const game = await fetch(`/api/games/${steamId}`).then(res => res.json());
                 displayGameInfo(game);
                 initRadarChart(game);
+                
+                // Загружаем жанры для выбранной игры
+                loadGameGenreData(steamId);
+                
+                // Загружаем аудиторию для выбранной игры
+                const zoomValue = document.getElementById('game-zoom-slider').value;
+                loadGameAudienceOverlap(steamId, zoomValue);
             });
         });
+        
+        // Функция для применения масштаба к существующей визуализации
+        function applyZoom(containerId, zoomLevel) {
+            const svg = d3.select(`#${containerId} svg`);
+            if (!svg.empty()) {
+                const g = svg.select('g.zoom-container');
+                if (!g.empty()) {
+                    g.attr('transform', `scale(${zoomLevel})`);
+                    
+                    // Центрируем масштабированное содержимое
+                    const container = document.getElementById(containerId);
+                    const width = container.clientWidth;
+                    const height = container.clientHeight || 500;
+                    
+                    // Вычисляем смещение для центрирования
+                    const offsetX = (width * (1 - zoomLevel)) / 2;
+                    const offsetY = (height * (1 - zoomLevel)) / 2;
+                    
+                    if (zoomLevel !== 1) {
+                        g.attr('transform', `translate(${width/2}, ${height/2}) scale(${zoomLevel}) translate(${-width/2}, ${-height/2})`);
+                    } else {
+                        g.attr('transform', 'translate(0, 0) scale(1)');
+                    }
+                }
+            }
+        }
         
         // Word Cloud
         async function initWordCloud() {
@@ -289,7 +569,7 @@ html>
             document.getElementById('game-display').style.display = 'block';
             document.getElementById('game-title').textContent = game.name;
             document.getElementById('game-release').textContent = `Release Date: ${game.releaseDate}`;
-            document.getElementById('game-price').textContent = `Price: $${game.price}`;
+            document.getElementById('game-price').textContent = `Price: ${game.price}`;
             
             // Здесь можно добавить изображение игры, если есть URL
             // document.getElementById('game-image').style.backgroundImage = `url(${game.imageUrl})`;
@@ -390,241 +670,283 @@ html>
             });
         }
 
- 
-
-// --- Audience Overlap Network ---
-async function loadAudienceOverlap() {
-    const response = await fetch("/api/audience-overlap");
-    const data = await response.json();
-    renderAudienceNetwork(data);
-}
-
-// D3.js Circular Packing для жанров
-async function loadGenreData() {
-    const genresData = await fetch('/api/genres').then(res => res.json());
-    
-    // Prepare data for circular packing
-    const packableData = {
-        name: "Genres",
-        children: genresData.children.map(genre => ({
-            name: genre.name,
-            value: genre.value || 100, // Use value if available or default
-            color: genre.itemStyle?.color || "#67c1f5" // Use color if available or default
-        }))
-    };
-    
-    const width = document.getElementById('genres-bubble').clientWidth;
-    const height = 500;
-    const sizeDivisor = 20;
-    const nodePadding = 2.5;
-    
-    // Clear any existing SVG
-    d3.select("#genres-bubble svg").remove();
-    
-    const svg = d3.select("#genres-bubble")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("viewBox", [0, 0, width, height])
-        .attr("style", "max-width: 100%; height: auto;");
-    
-    // Create a color scale
-    const color = d3.scaleOrdinal()
-        .domain(packableData.children.map(d => d.name))
-        .range(["#1a9fff", "#67c1f5", "#417a9b", "#4b6b82", "#5d7b93", "#6d8ba3"]);
-    
-    // Process the data to add radius
-    const processedData = packableData.children.map(d => {
-        return {
-            name: d.name,
-            value: d.value,
-            size: d.value / sizeDivisor,
-            radius: Math.max(d.value / sizeDivisor, 10), // Minimum radius of 10
-            color: d.color
-        };
-    }).sort((a, b) => b.value - a.value); // Sort so bigger bubbles are drawn first
-    
-    // Create the simulation
-    const simulation = d3.forceSimulation(processedData)
-        .force("forceX", d3.forceX().strength(0.1).x(width * 0.5))
-        .force("forceY", d3.forceY().strength(0.1).y(height * 0.5))
-        .force("center", d3.forceCenter().x(width * 0.5).y(height * 0.5))
-        .force("charge", d3.forceManyBody().strength(-15))
-        .force("collide", d3.forceCollide().strength(0.5).radius(d => d.radius + nodePadding).iterations(1));
-    
-    // Create a group for nodes
-    const node = svg.append("g")
-        .attr("class", "nodes")
-        .selectAll("g")
-        .data(processedData)
-        .join("g")
-        .attr("transform", d => `translate(${width/2},${height/2})`)
-        .call(drag(simulation));
-    
-    // Add circles to each node
-    node.append("circle")
-        .attr("r", d => d.radius)
-        .attr("fill", d => d.color || color(d.name))
-        .attr("stroke", "#1b2838")
-        .attr("stroke-width", 1.5)
-        .attr("fill-opacity", 0.8);
-    
-    // Add text labels to each node
-    node.append("text")
-        .text(d => d.name)
-        .attr("font-size", d => Math.min(d.radius * 0.8, 14))
-        .attr("text-anchor", "middle")
-        .attr("dy", ".35em")
-        .attr("fill", "#ffffff")
-        .style("pointer-events", "none")
-        .style("text-shadow", "0 1px 2px rgba(0,0,0,0.8)");
-    
-    // Update positions on simulation tick
-    simulation.on("tick", () => {
-        node.attr("transform", d => `translate(${d.x},${d.y})`);
-    });
-    
-    // Handle window resize
-    window.addEventListener("resize", () => {
-        const newWidth = document.getElementById('genres-bubble').clientWidth;
-        svg.attr("width", newWidth);
-        simulation.force("forceX", d3.forceX().strength(0.1).x(newWidth * 0.5));
-        simulation.force("center", d3.forceCenter().x(newWidth * 0.5).y(height * 0.5));
-        simulation.alpha(0.3).restart();
-    });
-    
-    // Drag functions
-    function drag(simulation) {
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
+        // --- Audience Overlap Network для всех игр ---
+        async function loadAudienceOverlap(percentage = 100, zoomLevel = 1) {
+            try {
+                // Очищаем предыдущую визуализацию
+                d3.select("#audience-network svg").remove();
+                
+                const response = await fetch(`/api/audience-overlap?percentage=${percentage}`);
+                const data = await response.json();
+                
+                // Обновляем статистику сети
+                const statsElement = document.getElementById('network-stats');
+                statsElement.textContent = `Displaying ${data.displayedGames} out of ${data.totalGames} games (${data.percentage}%) with ${data.nodes.length} nodes and ${data.links.length} connections`;
+                
+                renderAudienceNetwork(data, "audience-network", zoomLevel);
+            } catch (error) {
+                console.error("Error loading audience overlap:", error);
+            }
         }
         
-        function dragged(event, d) {
-            d.fx = event.x;
-            d.fy = event.y;
+        // --- Audience Overlap Network для выбранной игры ---
+        async function loadGameAudienceOverlap(steamId, zoomLevel = 1) {
+            try {
+                // Очищаем предыдущую визуализация
+                d3.select("#game-audience-network svg").remove();
+                
+                const response = await fetch(`/api/audience-overlap/${steamId}`);
+                const data = await response.json();
+                renderAudienceNetwork(data, "game-audience-network", zoomLevel);
+            } catch (error) {
+                console.error("Error loading game audience overlap:", error);
+            }
+        }
+
+        // D3.js Circular Packing для жанров всех игр
+        async function loadGenreData() {
+            const genresData = await fetch('/api/genres').then(res => res.json());
+            renderGenreBubbleChart(genresData, "genres-bubble");
         }
         
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
+        // D3.js Circular Packing для жанров выбранной игры
+        async function loadGameGenreData(steamId) {
+            try {
+                // Очищаем предыдущую визуализацию
+                d3.select("#game-genres-bubble svg").remove();
+                
+                const genresData = await fetch(`/api/genres/${steamId}`).then(res => res.json());
+                renderGenreBubbleChart(genresData, "game-genres-bubble");
+            } catch (error) {
+                console.error("Error loading game genres:", error);
+            }
         }
         
-        return d3.drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended);
-    }
-}
-
-function renderAudienceNetwork(data) {
-    const width = 700;
-    const height = 500;
-    const svg = d3.select("#audience-network")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height);
-
-    const color = d3.scaleOrdinal(d3.schemeCategory10);
-
-    const simulation = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => 200 * (1 - d.value)))
-        .force("charge", d3.forceManyBody().strength(-250))
-        .force("center", d3.forceCenter(width / 2, height / 2));
-
-    const link = svg.append("g")
-        .attr("stroke", "#999")
-        .attr("stroke-opacity", 0.6)
-        .selectAll("line")
-        .data(data.links)
-        .join("line")
-        .attr("stroke-width", d => d.value * 4);
-
-    const node = svg.append("g")
-        .selectAll("circle")
-        .data(data.nodes)
-        .join("circle")
-        .attr("r", 20)
-        .attr("fill", (d, i) => color(i))
-        .call(drag(simulation));
-
-    const label = svg.append("g")
-        .selectAll("text")
-        .data(data.nodes)
-        .join("text")
-        .text(d => d.name)
-        .attr("font-size", 10)
-        .attr("text-anchor", "middle")
-        .attr("dy", 4)
-        .style("pointer-events", "none");
-
-    simulation.on("tick", () => {
-        link
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-
-        node
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y);
-
-        label
-            .attr("x", d => d.x)
-            .attr("y", d => d.y);
-    });
-
-    function drag(simulation) {
-        return d3.drag()
-            .on("start", (event, d) => {
-                if (!event.active) simulation.alphaTarget(0.3).restart();
-                d.fx = d.x;
-                d.fy = d.y;
-            })
-            .on("drag", (event, d) => {
-                d.fx = event.x;
-                d.fy = event.y;
-            })
-            .on("end", (event, d) => {
-                if (!event.active) simulation.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
+        // Общая функция для рендеринга bubble chart жанров
+        function renderGenreBubbleChart(genresData, containerId) {
+            // Prepare data for circular packing
+            const packableData = {
+                name: "Genres",
+                children: genresData.children.map(genre => ({
+                    name: genre.name,
+                    value: genre.value || 100, // Use value if available or default
+                    color: genre.itemStyle?.color || "#67c1f5" // Use color if available or default
+                }))
+            };
+            
+            const container = document.getElementById(containerId);
+            const width = container.clientWidth;
+            const height = 500;
+            const sizeDivisor = 20;
+            const nodePadding = 2.5;
+            
+            // Clear any existing SVG
+            d3.select(`#${containerId} svg`).remove();
+            
+            const svg = d3.select(`#${containerId}`)
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height])
+                .attr("style", "max-width: 100%; height: auto;");
+            
+            // Create a color scale
+            const color = d3.scaleOrdinal()
+                .domain(packableData.children.map(d => d.name))
+                .range(["#1a9fff", "#67c1f5", "#417a9b", "#4b6b82", "#5d7b93", "#6d8ba3"]);
+            
+            // Process the data to add radius
+            const processedData = packableData.children.map(d => {
+                return {
+                    name: d.name,
+                    value: d.value,
+                    size: d.value / sizeDivisor,
+                    radius: Math.max(d.value / sizeDivisor, 10), // Minimum radius of 10
+                    color: d.color
+                };
+            }).sort((a, b) => b.value - a.value); // Sort so bigger bubbles are drawn first
+            
+            // Create the simulation
+            const simulation = d3.forceSimulation(processedData)
+                .force("forceX", d3.forceX().strength(0.1).x(width * 0.5))
+                .force("forceY", d3.forceY().strength(0.1).y(height * 0.5))
+                .force("center", d3.forceCenter().x(width * 0.5).y(height * 0.5))
+                .force("charge", d3.forceManyBody().strength(-15))
+                .force("collide", d3.forceCollide().strength(0.5).radius(d => d.radius + nodePadding).iterations(1));
+            
+            // Create a group for nodes
+            const node = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("g")
+                .data(processedData)
+                .join("g")
+                .attr("transform", d => `translate(${width/2},${height/2})`)
+                .call(drag(simulation));
+            
+            // Add circles to each node
+            node.append("circle")
+                .attr("r", d => d.radius)
+                .attr("fill", d => d.color || color(d.name))
+                .attr("stroke", "#1b2838")
+                .attr("stroke-width", 1.5)
+                .attr("fill-opacity", 0.8);
+            
+            // Add text labels to each node
+            node.append("text")
+                .text(d => d.name)
+                .attr("font-size", d => Math.min(d.radius * 0.8, 14))
+                .attr("text-anchor", "middle")
+                .attr("dy", ".35em")
+                .attr("fill", "#ffffff")
+                .style("pointer-events", "none")
+                .style("text-shadow", "0 1px 2px rgba(0,0,0,0.8)");
+            
+            // Update positions on simulation tick
+            simulation.on("tick", () => {
+                node.attr("transform", d => `translate(${d.x},${d.y})`);
             });
-    }
-}
-
-// Добавляем вызовы этих функций в основной блок загрузки
-document.addEventListener('DOMContentLoaded', async function() {
-    const games = await fetch('/api/games').then(res => res.json());
-
-    initWordCloud();
-    initGenresChart(); // sunburst
-    loadGenreData();   // D3 packing
-    loadAudienceOverlap();
-
-    const gameSelect = document.getElementById('game-select');
-    games.forEach(game => {
-        const option = document.createElement('option');
-        option.value = game.steamId;
-        option.textContent = game.name;
-        gameSelect.appendChild(option);
-    });
-
-    gameSelect.addEventListener('change', async function() {
-        const steamId = this.value;
-        if (!steamId) {
-            document.getElementById('game-display').style.display = 'none';
-            return;
+              () => {
+                node.attr("transform", d => `translate(${d.x},${d.y})`);
+            };
+            
+            // Handle window resize
+            window.addEventListener("resize", () => {
+                const newWidth = container.clientWidth;
+                svg.attr("width", newWidth);
+                simulation.force("forceX", d3.forceX().strength(0.1).x(newWidth * 0.5));
+                simulation.force("center", d3.forceCenter().x(newWidth * 0.5).y(height * 0.5));
+                simulation.alpha(0.3).restart();
+            });
+            
+            // Drag functions
+            function drag(simulation) {
+                function dragstarted(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+                }
+                
+                function dragged(event, d) {
+                    d.fx = event.x;
+                    d.fy = event.y;
+                }
+                
+                function dragended(event, d) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    d.fx = null;
+                    d.fy = null;
+                }
+                
+                return d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended);
+            }
         }
 
-        const game = await fetch(`/api/games/${steamId}`).then(res => res.json());
-        displayGameInfo(game);
-        initRadarChart(game);
-    });
-});
+        // Общая функция для рендеринга сети аудитории
+        function renderAudienceNetwork(data, containerId, zoomLevel = 1) {
+            // Очищаем предыдущую визуализацию
+            d3.select(`#${containerId} svg`).remove();
+            
+            const container = document.getElementById(containerId);
+            const width = container.clientWidth;
+            const height = 500;
+            
+            const svg = d3.select(`#${containerId}`)
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+            
+            // Создаем группу для масштабирования
+            const zoomContainer = svg.append("g")
+                .attr("class", "zoom-container");
 
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            const simulation = d3.forceSimulation(data.nodes)
+                .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => 200 * (1 - d.value)))
+                .force("charge", d3.forceManyBody().strength(-250))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            const link = zoomContainer.append("g")
+                .attr("stroke", "#999")
+                .attr("stroke-opacity", 0.6)
+                .selectAll("line")
+                .data(data.links)
+                .join("line")
+                .attr("stroke-width", d => d.value * 4);
+
+            const node = zoomContainer.append("g")
+                .selectAll("circle")
+                .data(data.nodes)
+                .join("circle")
+                .attr("r", 20)
+                .attr("fill", (d, i) => color(i))
+                .call(drag(simulation));
+
+            const label = zoomContainer.append("g")
+                .selectAll("text")
+                .data(data.nodes)
+                .join("text")
+                .text(d => d.name)
+                .attr("font-size", 10)
+                .attr("text-anchor", "middle")
+                .attr("dy", 4)
+                .style("pointer-events", "none");
+
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+
+                label
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y);
+            });
+
+            // Применяем начальный масштаб
+            if (zoomLevel !== 1) {
+                zoomContainer.attr('transform', `translate(${width/2}, ${height/2}) scale(${zoomLevel}) translate(${-width/2}, ${-height/2})`);
+            }
+
+            // Handle window resize
+            window.addEventListener("resize", () => {
+                const newWidth = container.clientWidth;
+                svg.attr("width", newWidth);
+                simulation.force("center", d3.forceCenter(newWidth / 2, height / 2));
+                simulation.alpha(0.3).restart();
+                
+                // Обновляем трансформацию при изменении размера окна
+                if (zoomLevel !== 1) {
+                    zoomContainer.attr('transform', `translate(${newWidth/2}, ${height/2}) scale(${zoomLevel}) translate(${-newWidth/2}, ${-height/2})`);
+                }
+            });
+
+            function drag(simulation) {
+                return d3.drag()
+                    .on("start", (event, d) => {
+                        if (!event.active) simulation.alphaTarget(0.3).restart();
+                        d.fx = d.x;
+                        d.fy = d.y;
+                    })
+                    .on("drag", (event, d) => {
+                        d.fx = event.x;
+                        d.fy = event.y;
+                    })
+                    .on("end", (event, d) => {
+                        if (!event.active) simulation.alphaTarget(0);
+                        d.fx = null;
+                        d.fy = null;
+                    });
+            }
+        }
     </script>
 </body>
 </html>
