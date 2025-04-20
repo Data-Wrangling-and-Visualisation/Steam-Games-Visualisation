@@ -94,6 +94,31 @@ async def get_genre_distribution(year: int = Query(None, description="Filter gam
         "name": "genres",
         "children": [{"name": genre, "value": count} for genre, count in sorted_genres]
     }
+    
+@app.get("/api/tags")
+async def get_tag_distribution(year: int = Query(None, description="Filter games by release year")):
+    """"""
+    games = load_games_data()
+    tags = {}
+
+    for game in games:
+        if year and "releaseDate" in game:
+            try:
+                game_year = int(game["releaseDate"][-4:])
+            except:
+                continue
+            if game_year != year:
+                continue
+
+        for genre in game.get("tags", []):
+            tags[genre] = tags.get(genre, 0) + 1
+
+    sorted_tags = sorted(tags.items(), key=lambda x: x[1], reverse=True)
+    
+    return {
+        "name": "tags",
+        "children": [{"name": tag, "value": count} for tag, count in sorted_tags]
+    }
 
 @app.get("/api/genres/{steam_id}")
 async def get_game_genre_distribution(steam_id: str):

@@ -296,6 +296,22 @@
             margin-bottom: 5px;
             color: #67c1f5;
         }
+
+        .chart-row {
+            display: flex;
+            flex-wrap: nowrap; /* prevent wrapping */
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 20px;
+        }
+
+        .side-chart {
+            width: 50%; /* ensure both take 50% */
+            height: 500px;
+            border-radius: 8px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -318,12 +334,10 @@
                 <input type="number" id="year-input" class="year-input" min="1980" max="2100" placeholder="e.g. 2020">
                 <button id="load-genres-btn" class="year-button">Load</button>
             </div>
-            <div id="genres-chart" class="chart-container"></div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title">Genres Bubble Chart (All Games)</h2>
-            <div id="genres-bubble" class="chart-container"></div>
+            <div class="chart-row">
+                <div id="genres-chart" class="chart-container side-chart"></div>
+                <div id="tags-bubble" class="chart-container side-chart"></div>
+            </div>
         </div>
         
         <div class="section">
@@ -633,9 +647,6 @@
                 }
             };
 
-
-            const yearSelect = document.getElementById('year-select');
-
             chart.setOption(option);
 
             window.addEventListener('resize', function () {
@@ -783,9 +794,13 @@
         }
 
         // D3.js Circular Packing для жанров всех игр
-        async function loadGenreData() {
-            const genresData = await fetch('/api/genres').then(res => res.json());
-            renderGenreBubbleChart(genresData, "genres-bubble");
+        async function loadGenreData(year = null) {
+            let url = '/api/tags';
+            if (year) {
+                url += `?year=${year}`;
+            }
+            const tagsData = await fetch(url).then(res => res.json());
+            renderGenreBubbleChart(tagsData, "tags-bubble");
         }
         
         // D3.js Circular Packing для жанров выбранной игры
@@ -1030,6 +1045,7 @@
             const yearInput = document.getElementById('year-input').value;
             const year = yearInput.trim() === '' ? null : parseInt(yearInput);
             initGenresChart(year);
+            loadGenreData(year);
         });
         document.getElementById('year-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
