@@ -3,6 +3,7 @@ FROM python:3.11
 WORKDIR /app
 
 COPY backend/scrape/games.json ./
+COPY backend/scrape/games_large.json ./
 COPY backend/main.py ./
 COPY requirements.txt ./
 COPY frontend/ ./
