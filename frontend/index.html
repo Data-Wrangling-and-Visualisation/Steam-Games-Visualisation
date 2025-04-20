@@ -558,11 +558,27 @@
 
             const chart = echarts.init(document.getElementById('genres-chart'));
             
+            const steamColors = [
+                '#67c1f5', '#1a9fff', '#4b6b82', '#5d7b93',
+                '#66a1c9', '#417a9b', '#9ecdf2', '#3e6b89',
+                '#7aa8d4', '#2a475e', '#5c94bd'
+            ];
+
+            // Assign a color to each genre before charting
+            const coloredData = genresData.children.map((genre, index) => ({
+                ...genre,
+                itemStyle: {
+                    color: steamColors[index % steamColors.length],
+                    borderWidth: 2,
+                    borderColor: '#1b2838'
+                }
+            }));
+
             const option = {
                 backgroundColor: 'transparent',
                 series: {
                     type: 'sunburst',
-                    data: genresData.children,
+                    data: coloredData,
                     radius: [0, '85%'],
                     sort: null,
                     emphasis: {
@@ -573,30 +589,18 @@
                         fontSize: 14,
                         rotate: 'radial'
                     },
-                    itemStyle: {
-                        color: function(params) {
-                            const steamColors = [
-                                '#67c1f5', '#1a9fff', '#4b6b82', 
-                                '#5d7b93', '#66a1c9', '#417a9b',
-                                '#9ecdf2', '#3e6b89', '#7aa8d4'
-                            ];
-                            return steamColors[params.dataIndex % steamColors.length];
-                        },
-                        borderWidth: 2,
-                        borderColor: '#2a475e'
-                    },
                     levels: [
                         {},
                         {
                             r0: '15%',
                             r: '35%',
-                            label: { rotate: 'tangential', color: '#c7d5e0' },
+                            label: { rotate: 'tangential' },
                             itemStyle: { borderWidth: 2 }
                         },
                         {
                             r0: '35%',
                             r: '65%',
-                            label: { color: '#acdbf5', align: 'right' },
+                            label: { align: 'right' },
                             itemStyle: { borderWidth: 2 }
                         },
                         {
@@ -609,11 +613,14 @@
                                 fontWeight: 'bold',
                                 fontSize: 13
                             },
-                            itemStyle: { borderWidth: 3 }
+                            itemStyle: {
+                                borderWidth: 3
+                            }
                         }
                     ]
                 }
             };
+
 
             const yearSelect = document.getElementById('year-select');
 
