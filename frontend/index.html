@@ -576,6 +576,18 @@
 
             const option = {
                 backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function (info) {
+                        return `<strong style="color:#67c1f5;">${info.name}</strong><br>Games: ${info.value}`;
+                    },
+                    backgroundColor: '#1b2838',
+                    borderColor: '#67c1f5',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: '#c6d4df'
+                    }
+                },
                 series: {
                     type: 'sunburst',
                     data: coloredData,
