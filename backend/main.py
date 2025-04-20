@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 
 from fastapi.responses import HTMLResponse
@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse
 import json
 from pathlib import Path
 from typing import List, Dict, Any
+import math
 
 app = FastAPI()
 
@@ -80,34 +81,123 @@ async def get_genre_distribution():
     
     return data
 
+@app.get("/api/genres/{steam_id}")
+async def get_game_genre_distribution(steam_id: str):
+    """Генерирует данные для circular packing по жанрам конкретной игры"""
+    games = load_games_data()
+    game = None
+    
+    for g in games:
+        if g["steamId"] == steam_id:
+            game = g
+            break
+    
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    # Создаем структуру для circular packing только для жанров выбранной игры
+    data = {
+        "name": "genres",
+        "children": [{"name": genre, "value": 1} for genre in game.get("genres", [])]
+    }
+    
+    return data
+
 @app.get("/api/audience-overlap")
-def get_audience_overlap():
-    """Генерирует данные для пересечения аудитории"""
-    data = load_games_data()  # Здесь берём список всех игр
-    for game in data:
-        if game.get("audienceOverlap"):
-            center_game = {
+def get_audience_overlap(percentage: int = Query(100, ge=10, le=100, description="Percentage of games to display")):
+    """Генерирует данные для пересечения аудитории всех игр с возможностью выбора процента игр"""
+    games = load_games_data()  # Загружаем список всех игр
+    
+    # Фильтруем только игры с данными о пересечении аудитории
+    games_with_overlap = [game for game in games if game.get("audienceOverlap")]
+    
+    # Вычисляем количество игр для отображения на основе выбранного процента
+    games_count = len(games_with_overlap)
+    display_count = math.ceil(games_count * percentage / 100)
+    
+    # Берем только нужное количество игр (сортируем по количеству связей для отображения наиболее связанных)
+    sorted_games = sorted(
+        games_with_overlap, 
+        key=lambda g: len(g.get("audienceOverlap", [])), 
+        reverse=True
+    )[:display_count]
+    
+    # Создаем списки для узлов и связей
+    nodes = []
+    links = []
+    node_ids = set()  # Для отслеживания уже добавленных узлов
+    
+    # Проходим по отфильтрованным играм и собираем данные о пересечении аудитории
+    for game in sorted_games:
+        if not game.get("audienceOverlap"):
+            continue
+            
+        # Добавляем текущую игру как узел, если её ещё нет
+        if game["steamId"] not in node_ids:
+            nodes.append({
                 "id": game["steamId"],
                 "name": game["name"]
-            }
-            overlap_nodes = [
-                {
-                    "id": g["steamId"],
-                    "name": g["name"]
-                } for g in game["audienceOverlap"]
-            ]
-            links = [
-                {
-                    "source": game["steamId"],
-                    "target": g["steamId"],
-                    "value": g["link"]
-                } for g in game["audienceOverlap"]
-            ]
-            nodes = [center_game] + overlap_nodes
-            return {"nodes": nodes, "links": links}
+            })
+            node_ids.add(game["steamId"])
         
-    return {"nodes": [], "links": []}
+        # Добавляем связанные игры и связи
+        for overlap_game in game["audienceOverlap"]:
+            # Добавляем связанную игру как узел, если её ещё нет
+            if overlap_game["steamId"] not in node_ids:
+                nodes.append({
+                    "id": overlap_game["steamId"],
+                    "name": overlap_game["name"]
+                })
+                node_ids.add(overlap_game["steamId"])
+            
+            # Добавляем связь между играми
+            links.append({
+                "source": game["steamId"],
+                "target": overlap_game["steamId"],
+                "value": overlap_game["link"]
+            })
+    
+    return {
+        "nodes": nodes, 
+        "links": links,
+        "totalGames": games_count,
+        "displayedGames": len(sorted_games),
+        "percentage": percentage
+    }
 
+@app.get("/api/audience-overlap/{steam_id}")
+def get_game_audience_overlap(steam_id: str):
+    """Генерирует данные для пересечения аудитории конкретной игры"""
+    games = load_games_data()
+    game = None
+    
+    for g in games:
+        if g["steamId"] == steam_id:
+            game = g
+            break
+    
+    if not game or not game.get("audienceOverlap"):
+        raise HTTPException(status_code=404, detail="Game or audience overlap data not found")
+    
+    center_game = {
+        "id": game["steamId"],
+        "name": game["name"]
+    }
+    overlap_nodes = [
+        {
+            "id": g["steamId"],
+            "name": g["name"]
+        } for g in game["audienceOverlap"]
+    ]
+    links = [
+        {
+            "source": game["steamId"],
+            "target": g["steamId"],
+            "value": g["link"]
+        } for g in game["audienceOverlap"]
+    ]
+    nodes = [center_game] + overlap_nodes
+    return {"nodes": nodes, "links": links}
 
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
 
