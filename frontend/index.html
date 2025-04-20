@@ -29,7 +29,7 @@
             padding: 20px 0;
             margin-bottom: 30px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            text-align: center; /* Центрирование заголовка */
+            text-align: center;
         }
         
         h1 {
@@ -109,7 +109,6 @@
             margin: 5px 0;
         }
         
-        /* Новые стили для двухколоночного макета */
         .flex-container {
             display: flex;
             flex-wrap: wrap;
@@ -135,11 +134,10 @@
             border-radius: 4px;
             margin-bottom: 30px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            position: relative; /* Для правильного позиционирования зума */
-            overflow: hidden; /* Чтобы содержимое не выходило за границы при зуме */
+            position: relative;
+            overflow: hidden; 
         }
         
-        /* Стили для слайдера процентов */
         .percentage-slider-container {
             margin-bottom: 20px;
             display: flex;
@@ -187,7 +185,6 @@
             margin-bottom: 15px;
         }
         
-        /* Стили для слайдера масштаба */
         .zoom-slider-container {
             margin-bottom: 20px;
             display: flex;
@@ -229,7 +226,6 @@
             text-align: center;
         }
         
-        /* Стили для контролов визуализации */
         .visualization-controls {
             background-color: #1b2838;
             border-radius: 4px;
@@ -467,7 +463,6 @@
             }
         }
 
-        /* НОВЫЕ СТИЛИ ДЛЯ TREEMAP */
         .button-group {
             display: flex;
             flex-wrap: wrap;
@@ -497,14 +492,14 @@
 
         .chart-row {
             display: flex;
-            flex-wrap: nowrap; /* prevent wrapping */
+            flex-wrap: nowrap;
             justify-content: space-between;
             align-items: stretch;
             gap: 20px;
         }
 
         .side-chart {
-            width: 50%; /* ensure both take 50% */
+            width: 50%;
             height: 500px;
             border-radius: 8px;
             padding: 10px;
@@ -521,7 +516,7 @@
             width: 36px;
             height: 36px;
             margin-right: 12px;
-            filter: brightness(1.2); /* optional: boost visibility */
+            filter: brightness(1.2);
         }
 
         .year-input-wrapper {
@@ -601,7 +596,6 @@
             </div>
         </div>
         
-        <!-- НОВАЯ СЕКЦИЯ ДЛЯ TREEMAP -->
         <div class="section">
             <h2 class="section-title">Treemap Visualizations</h2>
             
@@ -638,8 +632,7 @@
                         <p class="game-meta" id="game-price"></p>
                     </div>
                 </div>
-                
-                <!-- Двухколоночный макет для радара и жанров -->
+
                 <div class="flex-container">
                     <div class="flex-item">
                         <h3 class="section-title">Game Stats</h3>
@@ -650,8 +643,7 @@
                         <div id="game-genres-bubble" class="chart-container"></div>
                     </div>
                 </div>
-                
-                <!-- Аудитория для выбранной игры -->
+
                 <h3 class="section-title">Game Audience Overlap</h3>
                 <div class="visualization-controls">
                     <div class="control-group">
@@ -671,7 +663,6 @@
         <div class="section">
             <h2 class="section-title">Audience Overlap Network (All Games)</h2>
             
-            <!-- Контролы визуализации -->
             <div class="visualization-controls">
                 <div class="control-group">
                     <label class="control-label" for="percentage-slider">Percentage of games to display:</label>
@@ -694,7 +685,6 @@
                 </div>
             </div>
             
-            <!-- Статистика сети -->
             <div class="network-stats" id="network-stats"></div>
             
             <div id="audience-network"></div>
@@ -773,24 +763,17 @@
     </div>
 
     <script>
-        // Загрузка данных и инициализация графиков
         document.addEventListener('DOMContentLoaded', async function() {
-            // Загружаем данные об играх
             const games = await fetch('/api/games').then(res => res.json());
             
-            // Инициализация wordcloud
             initWordCloud();
             
-            // Инициализация circular packing для жанров
             initGenresChart();
             
-            // Инициализация bubble chart для жанров
             loadGenreData();
             
-            // Инициализация сети аудитории для всех игр
-            loadAudienceOverlap(100, 1); // По умолчанию 100% и масштаб 1
+            loadAudienceOverlap(100, 1);
             
-            // Обработчик изменения слайдера процентов
             const percentageSlider = document.getElementById('percentage-slider');
             const percentageValue = document.getElementById('percentage-value');
             
@@ -804,8 +787,7 @@
                 const zoomValue = document.getElementById('zoom-slider').value;
                 loadAudienceOverlap(value, zoomValue);
             });
-            
-            // Обработчик изменения слайдера масштаба для общей сети
+
             const zoomSlider = document.getElementById('zoom-slider');
             const zoomValue = document.getElementById('zoom-value');
             
@@ -814,7 +796,6 @@
                 const zoomPercent = Math.round(value * 100);
                 zoomValue.textContent = `${zoomPercent}%`;
                 
-                // Применяем масштаб к существующей визуализации
                 applyZoom('audience-network', value);
             });
             
@@ -824,7 +805,6 @@
                 loadAudienceOverlap(percentValue, value);
             });
             
-            // Обработчик изменения слайдера масштаба для сети конкретной игры
             const gameZoomSlider = document.getElementById('game-zoom-slider');
             const gameZoomValue = document.getElementById('game-zoom-value');
             
@@ -833,11 +813,9 @@
                 const zoomPercent = Math.round(value * 100);
                 gameZoomValue.textContent = `${zoomPercent}%`;
                 
-                // Применяем масштаб к существующей визуализации
                 applyZoom('game-audience-network', value);
             });
             
-            // Заполняем выпадающий список игр
             const gameSelect = document.getElementById('game-select');
             games.forEach(game => {
                 const option = document.createElement('option');
@@ -846,7 +824,6 @@
                 gameSelect.appendChild(option);
             });
             
-            // Обработчик выбора игры
             gameSelect.addEventListener('change', async function() {
                 const steamId = this.value;
                 if (!steamId) {
@@ -858,19 +835,15 @@
                 displayGameInfo(game);
                 initRadarChart(game);
                 
-                // Загружаем жанры для выбранной игры
                 loadGameGenreData(steamId);
                 
-                // Загружаем аудиторию для выбранной игры
                 const zoomValue = document.getElementById('game-zoom-slider').value;
                 loadGameAudienceOverlap(steamId, zoomValue);
             });
 
-            // Инициализация treemap
             initTreemap();
         });
         
-        // Функция для применения масштаба к существующей визуализации
         function applyZoom(containerId, zoomLevel) {
             const svg = d3.select(`#${containerId} svg`);
             if (!svg.empty()) {
@@ -878,12 +851,10 @@
                 if (!g.empty()) {
                     g.attr('transform', `scale(${zoomLevel})`);
                     
-                    // Центрируем масштабированное содержимое
                     const container = document.getElementById(containerId);
                     const width = container.clientWidth;
                     const height = container.clientHeight || 500;
                     
-                    // Вычисляем смещение для центрирования
                     const offsetX = (width * (1 - zoomLevel)) / 2;
                     const offsetY = (height * (1 - zoomLevel)) / 2;
                     
@@ -1005,24 +976,19 @@
             });
         }
         
-        // Отображение информации об игре
         function displayGameInfo(game) {
             document.getElementById('game-display').style.display = 'block';
             document.getElementById('game-title').textContent = game.name;
             document.getElementById('game-release').textContent = `Release Date: ${game.releaseDate}`;
             document.getElementById('game-price').textContent = `Price: ${game.price}`;
             
-            // Здесь можно добавить изображение игры, если есть URL
-            // document.getElementById('game-image').style.backgroundImage = `url(${game.imageUrl})`;
         }
         
-        // Radar Chart для анализа игры
         function initRadarChart(game) {
             const chart = echarts.init(document.getElementById('radar-chart'));
             
-            // Нормализуем данные для радарной диаграммы
             const maxValues = {
-                price: 100,  // Максимальная цена для нормализации
+                price: 100, 
                 reviews: Math.max(game.reviews, 500000),
                 reviewScore: 100,
                 followers: Math.max(game.followers,  500000),
@@ -1042,7 +1008,7 @@
             const data = [
                 {
                     value: [
-                        maxValues.price - game.price,  // Инвертируем цену (чем ниже тем лучше)
+                        maxValues.price - game.price, 
                         game.reviews,
                         game.reviewScore,
                         game.followers,
@@ -1113,16 +1079,13 @@
             });
         }
 
-        // --- Audience Overlap Network для всех игр ---
         async function loadAudienceOverlap(percentage = 100, zoomLevel = 1) {
             try {
-                // Очищаем предыдущую визуализацию
                 d3.select("#audience-network svg").remove();
                 
                 const response = await fetch(`/api/audience-overlap?percentage=${percentage}`);
                 const data = await response.json();
                 
-                // Обновляем статистику сети
                 const statsElement = document.getElementById('network-stats');
                 statsElement.textContent = `Displaying ${data.displayedGames} out of ${data.totalGames} games (${data.percentage}%) with ${data.nodes.length} nodes and ${data.links.length} connections`;
                 
@@ -1132,10 +1095,8 @@
             }
         }
         
-        // --- Audience Overlap Network для выбранной игры ---
         async function loadGameAudienceOverlap(steamId, zoomLevel = 1) {
             try {
-                // Очищаем предыдущую визуализация
                 d3.select("#game-audience-network svg").remove();
                 
                 const response = await fetch(`/api/audience-overlap/${steamId}`);
@@ -1159,7 +1120,6 @@
         // D3.js Circular Packing для жанров выбранной игры
         async function loadGameGenreData(steamId) {
             try {
-                // Очищаем предыдущую визуализацию
                 d3.select("#game-genres-bubble svg").remove();
                 
                 const tagsData = await fetch(`/api/tags/${steamId}`).then(res => res.json());
@@ -1169,7 +1129,6 @@
             }
         }
         
-        // Общая функция для рендеринга bubble chart жанров
         function renderGenreBubbleChart(genresData, containerId) {
             // Prepare data for circular packing
             const packableData = {
@@ -1288,9 +1247,7 @@
             }
         }
 
-        // Общая функция для рендеринга сети аудитории
         function renderAudienceNetwork(data, containerId, zoomLevel = 1) {
-            // Очищаем предыдущую визуализацию
             d3.select(`#${containerId} svg`).remove();
             
             const container = document.getElementById(containerId);
@@ -1302,7 +1259,6 @@
                 .attr("width", width)
                 .attr("height", height);
             
-            // Создаем группу для масштабирования
             const zoomContainer = svg.append("g")
                 .attr("class", "zoom-container");
 
@@ -1355,7 +1311,6 @@
                     .attr("y", d => d.y);
             });
 
-            // Применяем начальный масштаб
             if (zoomLevel !== 1) {
                 zoomContainer.attr('transform', `translate(${width/2}, ${height/2}) scale(${zoomLevel}) translate(${-width/2}, ${-height/2})`);
             }
@@ -1367,7 +1322,6 @@
                 simulation.force("center", d3.forceCenter(newWidth / 2, height / 2));
                 simulation.alpha(0.3).restart();
                 
-                // Обновляем трансформацию при изменении размера окна
                 if (zoomLevel !== 1) {
                     zoomContainer.attr('transform', `translate(${newWidth/2}, ${height/2}) scale(${zoomLevel}) translate(${-newWidth/2}, ${-height/2})`);
                 }
@@ -1401,7 +1355,6 @@
         let lastFrameTime = 0;
         let games = []; 
 
-        // функция рендеринга Time-series данных по разным показателям
         function formatDate(timestamp) {
           return new Date(timestamp).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -1957,8 +1910,6 @@
             if (maxHistoryLength === 0) {
               throw new Error('No history data available for any game');
             }
-
-            // выбор игры на основе дропдаун меню
             function renderGameDropdown() {
                 const gameSelectionEl = document.getElementById('game-selection');
                 if (!gameSelectionEl) return;
@@ -2031,8 +1982,6 @@
           setTimeout(fetchGamesAndInitialize, 100);
         }
 
-
-        // НОВЫЙ КОД ДЛЯ TREEMAP
         // Treemap Visualization
         let currentTreemapType = "languages";
         

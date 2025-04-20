@@ -13,18 +13,14 @@ from collections import Counter
 
 app = FastAPI()
 
-# Пути к файлам
 BASE_DIR = Path(__file__).parent
 
 DATA_FILE = BASE_DIR / "games.json"
 LARGE_DATA_FILE = BASE_DIR / "games_large.json"
 FRONTEND_DIR = BASE_DIR
 
-
-# Отдача статики (фронтенд)
-
 def load_games_data() -> List[Dict[str, Any]]:
-    """Загружает данные об играх из JSON файла"""
+    """Loads game data from a JSON file"""
     if not DATA_FILE.exists():
         raise HTTPException(status_code=500, detail="Games data file not found")
     
@@ -32,7 +28,7 @@ def load_games_data() -> List[Dict[str, Any]]:
         return json.load(f)
 
 def load_large_games_data() -> List[Dict[str, Any]]:
-    """Загружает данные об играх из JSON файла"""
+    """Loads game data from a JSON file"""
     if not LARGE_DATA_FILE.exists():
         raise HTTPException(status_code=500, detail="Games data file not found")
     
@@ -41,12 +37,12 @@ def load_large_games_data() -> List[Dict[str, Any]]:
 
 @app.get("/api/games")
 async def get_games():
-    """Возвращает список всех игр"""
+    """Returns the data of a specific gameReturns a list of all games"""
     return load_games_data()
 
 @app.get("/api/games/{steam_id}")
 async def get_game(steam_id: str):
-    """Возвращает данные конкретной игры"""
+    """Returns the data of a specific game"""
     games = load_games_data()
     for game in games:
         if game["steamId"] == steam_id:
@@ -55,25 +51,24 @@ async def get_game(steam_id: str):
 
 @app.get("/api/wordcloud")
 async def get_wordcloud_data():
-    """Генерирует данные для wordcloud из названий игр"""
+    """Generates data for wordcloud from game titles"""
     games = load_large_games_data()
     words = {}
     
     for game in games:
         name = game["name"]
-        # Разбиваем название на слова и считаем частоту
+        
         for word in name.split():
             word = re.sub(r'[^a-zA-Zа-яА-Я]', '', word).capitalize()
-            if len(word) > 2 and word != "The":  # Игнорируем короткие слова
+            if len(word) > 2 and word != "The": 
                 words[word] = words.get(word, 0) + 1
     
-    # Преобразуем в формат для wordcloud
     wordcloud_data = [{"text": word, "value": count} for word, count in words.items()]
     return wordcloud_data
 
 @app.get("/api/genres")
 async def get_genre_distribution(year: int = Query(None, description="Filter games by release year")):
-    """Генерирует данные для circular packing по жанрам, опционально фильтруя по году"""
+    """Generates data for circular packing by genre, optionally filtering by year"""
     games = load_games_data()
     genres = {}
 
@@ -98,7 +93,7 @@ async def get_genre_distribution(year: int = Query(None, description="Filter gam
     
 @app.get("/api/tags")
 async def get_tag_distribution(year: int = Query(None, description="Filter games by release year")):
-    """"""
+    """Get tag distribution data for circular packing"""
     games = load_games_data()
     tags = {}
 
@@ -123,7 +118,7 @@ async def get_tag_distribution(year: int = Query(None, description="Filter games
 
 @app.get("/api/tags/{steam_id}")
 async def get_game_genre_distribution(steam_id: str):
-    """Генерирует данные для circular packing по жанрам конкретной игры"""
+    """Generates data for circular packing by genres of a particular game"""
     games = load_games_data()
     game = None
     
@@ -135,7 +130,6 @@ async def get_game_genre_distribution(steam_id: str):
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
     
-    # Создаем структуру для circular packing только для жанров выбранной игры
     data = {
         "name": "tags",
         "children": [{"name": tag, "value": 1} for tag in game.get("tags", [])]
@@ -145,34 +139,27 @@ async def get_game_genre_distribution(steam_id: str):
 
 @app.get("/api/audience-overlap")
 def get_audience_overlap(percentage: int = Query(100, ge=10, le=100, description="Percentage of games to display")):
-    """Генерирует данные для пересечения аудитории всех игр с возможностью выбора процента игр"""
-    games = load_games_data()  # Загружаем список всех игр
+    """Generates data to intersect the audience of all games with the ability to select a percentage of games"""
+    games = load_games_data()
     
-    # Фильтруем только игры с данными о пересечении аудитории
     games_with_overlap = [game for game in games if game.get("audienceOverlap")]
     
-    # Вычисляем количество игр для отображения на основе выбранного процента
     games_count = len(games_with_overlap)
     display_count = math.ceil(games_count * percentage / 100)
     
-    # Берем только нужное количество игр (сортируем по количеству связей для отображения наиболее связанных)
     sorted_games = sorted(
         games_with_overlap, 
         key=lambda g: len(g.get("audienceOverlap", [])), 
         reverse=True
     )[:display_count]
     
-    # Создаем списки для узлов и связей
     nodes = []
     links = []
-    node_ids = set()  # Для отслеживания уже добавленных узлов
+    node_ids = set() 
     
-    # Проходим по отфильтрованным играм и собираем данные о пересечении аудитории
     for game in sorted_games:
         if not game.get("audienceOverlap"):
             continue
-            
-        # Добавляем текущую игру как узел, если её ещё нет
         if game["steamId"] not in node_ids:
             nodes.append({
                 "id": game["steamId"],
@@ -180,9 +167,7 @@ def get_audience_overlap(percentage: int = Query(100, ge=10, le=100, description
             })
             node_ids.add(game["steamId"])
         
-        # Добавляем связанные игры и связи
         for overlap_game in game["audienceOverlap"]:
-            # Добавляем связанную игру как узел, если её ещё нет
             if overlap_game["steamId"] not in node_ids:
                 nodes.append({
                     "id": overlap_game["steamId"],
@@ -190,7 +175,6 @@ def get_audience_overlap(percentage: int = Query(100, ge=10, le=100, description
                 })
                 node_ids.add(overlap_game["steamId"])
             
-            # Добавляем связь между играми
             links.append({
                 "source": game["steamId"],
                 "target": overlap_game["steamId"],
@@ -207,7 +191,7 @@ def get_audience_overlap(percentage: int = Query(100, ge=10, le=100, description
 
 @app.get("/api/audience-overlap/{steam_id}")
 def get_game_audience_overlap(steam_id: str):
-    """Генерирует данные для пересечения аудитории конкретной игры"""
+    """Generates data to intersect the audience of a particular game"""
     games = load_games_data()
     game = None
     
@@ -239,8 +223,6 @@ def get_game_audience_overlap(steam_id: str):
     nodes = [center_game] + overlap_nodes
     return {"nodes": nodes, "links": links}
 
-# НОВЫЕ ENDPOINTS ДЛЯ TREEMAP
-
 @app.get("/api/treemap/languages")
 async def get_languages_treemap():
     """Generate treemap data for languages distribution in games"""
@@ -248,11 +230,9 @@ async def get_languages_treemap():
     languages_counter = Counter()
     
     for game in games:
-        # Count each language occurrence
         for language in game.get("languages", []):
             languages_counter[language] += 1
     
-    # Convert to treemap format
     treemap_data = {
         "name": "languages",
         "children": [
@@ -270,11 +250,9 @@ async def get_publishers_treemap():
     publishers_counter = Counter()
     
     for game in games:
-        # Count each publisher occurrence
         for publisher in game.get("publishers", []):
             publishers_counter[publisher] += 1
     
-    # Convert to treemap format
     treemap_data = {
         "name": "publishers",
         "children": [
@@ -290,13 +268,10 @@ async def get_revenue_treemap():
     """Generate treemap data for games by revenue"""
     games = load_games_data()
     
-    # Filter games with revenue data and sort by revenue
     games_with_revenue = []
     for game in games:
         revenue = 0
-        # Try to get the latest revenue from history if available
         if game.get("history") and len(game["history"]) > 0:
-            # Sort history by timestamp to get the latest
             sorted_history = sorted(game["history"], key=lambda x: x.get("timeStamp", 0), reverse=True)
             revenue = sorted_history[0].get("revenue", 0)
         
@@ -306,11 +281,9 @@ async def get_revenue_treemap():
                 "value": revenue
             })
     
-    # Sort by revenue and take top 50
     games_with_revenue.sort(key=lambda x: x["value"], reverse=True)
     top_games = games_with_revenue[:50]
     
-    # Convert to treemap format
     treemap_data = {
         "name": "revenue",
         "children": top_games
@@ -323,13 +296,10 @@ async def get_players_treemap():
     """Generate treemap data for games by player count"""
     games = load_games_data()
     
-    # Filter games with player data and sort by player count
     games_with_players = []
     for game in games:
         players = 0
-        # Try to get the latest player count from history if available
         if game.get("history") and len(game["history"]) > 0:
-            # Sort history by timestamp to get the latest
             sorted_history = sorted(game["history"], key=lambda x: x.get("timeStamp", 0), reverse=True)
             players = sorted_history[0].get("players", 0)
         
@@ -339,11 +309,9 @@ async def get_players_treemap():
                 "value": players
             })
     
-    # Sort by player count and take top 50
     games_with_players.sort(key=lambda x: x["value"], reverse=True)
     top_games = games_with_players[:50]
     
-    # Convert to treemap format
     treemap_data = {
         "name": "players",
         "children": top_games
