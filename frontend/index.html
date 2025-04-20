@@ -1007,6 +1007,16 @@
                     });
             }
         }
+        document.getElementById('load-genres-btn').addEventListener('click', () => {
+            const yearInput = document.getElementById('year-input').value;
+            const year = yearInput.trim() === '' ? null : parseInt(yearInput);
+            initGenresChart(year);
+        });
+        document.getElementById('year-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('load-genres-btn').click();
+            }
+        });
     </script>
 </body>
 </html>
