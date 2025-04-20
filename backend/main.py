@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
 import json
+import re
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -13,6 +14,7 @@ app = FastAPI()
 BASE_DIR = Path(__file__).parent
 
 DATA_FILE = BASE_DIR / "scrape" / "games.json"
+LARGE_DATA_FILE = BASE_DIR / "scrape" / "games_large.json"
 FRONTEND_DIR = BASE_DIR.parent / "frontend"
 
 
@@ -24,6 +26,14 @@ def load_games_data() -> List[Dict[str, Any]]:
         raise HTTPException(status_code=500, detail="Games data file not found")
     
     with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def load_large_games_data() -> List[Dict[str, Any]]:
+    """Загружает данные об играх из JSON файла"""
+    if not LARGE_DATA_FILE.exists():
+        raise HTTPException(status_code=500, detail="Games data file not found")
+    
+    with open(LARGE_DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
 @app.get("/api/games")
@@ -43,15 +53,15 @@ async def get_game(steam_id: str):
 @app.get("/api/wordcloud")
 async def get_wordcloud_data():
     """Генерирует данные для wordcloud из названий игр"""
-    games = load_games_data()
+    games = load_large_games_data()
     words = {}
     
     for game in games:
         name = game["name"]
         # Разбиваем название на слова и считаем частоту
         for word in name.split():
-            word = word.strip(".,!?\"':;()[]{}")
-            if len(word) > 2:  # Игнорируем короткие слова
+            word = re.sub(r'[^a-zA-Zа-яА-Я]', '', word).capitalize()
+            if len(word) > 2 and word != "The":  # Игнорируем короткие слова
                 words[word] = words.get(word, 0) + 1
     
     # Преобразуем в формат для wordcloud
