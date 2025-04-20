@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 from typing import List, Dict, Any
 import math
+from collections import Counter
 
 app = FastAPI()
 
@@ -212,6 +213,118 @@ def get_game_audience_overlap(steam_id: str):
     ]
     nodes = [center_game] + overlap_nodes
     return {"nodes": nodes, "links": links}
+
+# НОВЫЕ ENDPOINTS ДЛЯ TREEMAP
+
+@app.get("/api/treemap/languages")
+async def get_languages_treemap():
+    """Generate treemap data for languages distribution in games"""
+    games = load_games_data()
+    languages_counter = Counter()
+    
+    for game in games:
+        # Count each language occurrence
+        for language in game.get("languages", []):
+            languages_counter[language] += 1
+    
+    # Convert to treemap format
+    treemap_data = {
+        "name": "languages",
+        "children": [
+            {"name": language, "value": count} 
+            for language, count in languages_counter.most_common(50)  # Limit to top 50
+        ]
+    }
+    
+    return treemap_data
+
+@app.get("/api/treemap/publishers")
+async def get_publishers_treemap():
+    """Generate treemap data for publishers distribution in games"""
+    games = load_games_data()
+    publishers_counter = Counter()
+    
+    for game in games:
+        # Count each publisher occurrence
+        for publisher in game.get("publishers", []):
+            publishers_counter[publisher] += 1
+    
+    # Convert to treemap format
+    treemap_data = {
+        "name": "publishers",
+        "children": [
+            {"name": publisher, "value": count} 
+            for publisher, count in publishers_counter.most_common(50)  # Limit to top 50
+        ]
+    }
+    
+    return treemap_data
+
+@app.get("/api/treemap/revenue")
+async def get_revenue_treemap():
+    """Generate treemap data for games by revenue"""
+    games = load_games_data()
+    
+    # Filter games with revenue data and sort by revenue
+    games_with_revenue = []
+    for game in games:
+        revenue = 0
+        # Try to get the latest revenue from history if available
+        if game.get("history") and len(game["history"]) > 0:
+            # Sort history by timestamp to get the latest
+            sorted_history = sorted(game["history"], key=lambda x: x.get("timeStamp", 0), reverse=True)
+            revenue = sorted_history[0].get("revenue", 0)
+        
+        if revenue > 0:
+            games_with_revenue.append({
+                "name": game["name"],
+                "value": revenue
+            })
+    
+    # Sort by revenue and take top 50
+    games_with_revenue.sort(key=lambda x: x["value"], reverse=True)
+    top_games = games_with_revenue[:50]
+    
+    # Convert to treemap format
+    treemap_data = {
+        "name": "revenue",
+        "children": top_games
+    }
+    
+    return treemap_data
+
+@app.get("/api/treemap/players")
+async def get_players_treemap():
+    """Generate treemap data for games by player count"""
+    games = load_games_data()
+    
+    # Filter games with player data and sort by player count
+    games_with_players = []
+    for game in games:
+        players = 0
+        # Try to get the latest player count from history if available
+        if game.get("history") and len(game["history"]) > 0:
+            # Sort history by timestamp to get the latest
+            sorted_history = sorted(game["history"], key=lambda x: x.get("timeStamp", 0), reverse=True)
+            players = sorted_history[0].get("players", 0)
+        
+        if players > 0:
+            games_with_players.append({
+                "name": game["name"],
+                "value": players
+            })
+    
+    # Sort by player count and take top 50
+    games_with_players.sort(key=lambda x: x["value"], reverse=True)
+    top_games = games_with_players[:50]
+    
+    # Convert to treemap format
+    treemap_data = {
+        "name": "players",
+        "children": top_games
+    }
+    
+    return treemap_data
 
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
 

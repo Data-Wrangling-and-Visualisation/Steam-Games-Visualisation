@@ -8,6 +8,7 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.0/src/wordcloud2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Motiva Sans', Arial, sans-serif;
@@ -107,53 +108,6 @@
             font-size: 14px;
             margin: 5px 0;
         }
-
-        .year-input-wrapper {
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .year-label {
-            color: #c6d4df;
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        .year-input {
-            background-color: #1b2838;
-            border: 1px solid #3c6e94;
-            color: #c6d4df;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            outline: none;
-            width: 120px;
-            transition: border-color 0.3s;
-        }
-
-        .year-input:focus {
-            border-color: #67c1f5;
-        }
-
-        .year-button {
-            background-color: #67c1f5;
-            color: #1b2838;
-            border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-
-        .year-button:hover {
-            background-color: #4aa3e0;
-        }
-
         
         /* Новые стили для двухколоночного макета */
         .flex-container {
@@ -296,6 +250,250 @@
             margin-bottom: 5px;
             color: #67c1f5;
         }
+
+        /* Game Performance Visualization Styles */
+        .game-performance-section {
+            background-color: #2a3f5a;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .date-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .date-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .playback-controls {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: #67c1f5;
+            color: #171a21;
+        }
+
+        .btn-primary:hover {
+            background-color: #4da5e6;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: #c6d4df;
+            border: 1px solid #3d556e;
+        }
+
+        .btn-outline:hover {
+            background-color: #3d556e;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .speed-control {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 20px;
+        }
+
+        .speed-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 500;
+            color: #c6d4df;
+        }
+
+        .slider {
+            width: 100%;
+            height: 0.5rem;
+            background-color: #1b2838;
+            border-radius: 0.25rem;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: #67c1f5;
+            cursor: pointer;
+        }
+
+        .performance-chart-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background-color: #1b2838;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #8f98a0;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .timeline-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .timeline-label {
+            font-weight: 500;
+            color: #c6d4df;
+        }
+
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: #8f98a0;
+        }
+
+        .status-message {
+            background-color: #1b2838;
+            color: #c6d4df;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .game-selection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .game-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .game-button:hover {
+            opacity: 0.9;
+        }
+
+        .game-details {
+            background-color: #1b2838;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .game-details h3 {
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .game-details p {
+            color: #8f98a0;
+            margin: 5px 0;
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .playback-controls {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* НОВЫЕ СТИЛИ ДЛЯ TREEMAP */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .treemap-container {
+            width: 100%;
+            height: 600px;
+            background-color: #1b2838;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .loading, .error {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #c6d4df;
+        }
+
+        .error {
+            color: #ef4444;
+        }
     </style>
 </head>
 <body>
@@ -313,17 +511,33 @@
         
         <div class="section">
             <h2 class="section-title">Genres Distribution</h2>
-            <div class="year-input-wrapper">
-                <label for="year-input" class="year-label">Enter Year:</label>
-                <input type="number" id="year-input" class="year-input" min="1980" max="2100" placeholder="e.g. 2020">
-                <button id="load-genres-btn" class="year-button">Load</button>
-            </div>
             <div id="genres-chart" class="chart-container"></div>
         </div>
 
         <div class="section">
             <h2 class="section-title">Genres Bubble Chart (All Games)</h2>
             <div id="genres-bubble" class="chart-container"></div>
+        </div>
+        
+        <!-- НОВАЯ СЕКЦИЯ ДЛЯ TREEMAP -->
+        <div class="section">
+            <h2 class="section-title">Treemap Visualizations</h2>
+            
+            <div class="visualization-controls">
+                <div class="control-group">
+                    <label class="control-label">Select Treemap Type:</label>
+                    <div class="button-group">
+                        <button id="languages-btn" class="btn btn-primary">Languages</button>
+                        <button id="publishers-btn" class="btn btn-outline">Publishers</button>
+                        <button id="revenue-btn" class="btn btn-outline">Revenue</button>
+                        <button id="players-btn" class="btn btn-outline">Players</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="treemap-container" class="treemap-container">
+                <div class="loading">Loading treemap data...</div>
+            </div>
         </div>
         
         <div class="section">
@@ -403,6 +617,77 @@
             <div class="network-stats" id="network-stats"></div>
             
             <div id="audience-network"></div>
+        </div>
+
+        <!-- Game Performance Visualization Section -->
+        <div class="section game-performance-section">
+            <h2 class="section-title">Game Performance Over Time</h2>
+            
+            <div id="status-message" class="status-message">Loading game performance data...</div>
+            
+            <div class="date-display">
+                <h3 id="current-date" class="date-text">Loading...</h3>
+            </div>
+            
+            <div class="playback-controls">
+                <button id="go-to-start" class="btn btn-outline">⏮</button>
+                <button id="go-to-previous" class="btn btn-outline">⏪</button>
+                <button id="toggle-playback" class="btn btn-primary">
+                    <span id="play-icon">▶</span>
+                    <span id="pause-icon" class="hidden">⏸</span>
+                    <span id="playback-text">Play</span>
+                </button>
+                <button id="go-to-next" class="btn btn-outline">⏩</button>
+                <button id="go-to-end" class="btn btn-outline">⏭</button>
+            </div>
+            
+            <div class="speed-control">
+                <div class="speed-header">
+                    <span>Animation Speed</span>
+                    <span id="speed-value">100ms</span>
+                </div>
+                <input type="range" id="speed-slider" min="50" max="500" step="10" value="100" class="slider">
+            </div>
+            
+            <div class="game-selection" id="game-selection">
+                <div class="loading-indicator">Loading games...</div>
+            </div>
+            
+            <div class="performance-chart-container">
+                <canvas id="scatter-chart"></canvas>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Review Score</div>
+                    <div id="metric-score" class="metric-value">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Avg. Playtime</div>
+                    <div id="metric-playtime" class="metric-value">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Active Players</div>
+                    <div id="metric-players" class="metric-value">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Revenue</div>
+                    <div id="metric-sales" class="metric-value">-</div>
+                </div>
+            </div>
+            
+            <div class="game-details" id="game-details">
+                <p>Select a game to view details</p>
+            </div>
+            
+            <div class="timeline-container">
+                <div class="timeline-label">Timeline</div>
+                <input type="range" id="timeline-slider" min="0" value="0" class="slider">
+                <div class="timeline-labels">
+                    <span id="timeline-start">-</span>
+                    <span id="timeline-end">-</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -499,6 +784,9 @@
                 const zoomValue = document.getElementById('game-zoom-slider').value;
                 loadGameAudienceOverlap(steamId, zoomValue);
             });
+
+            // Инициализация treemap
+            initTreemap();
         });
         
         // Функция для применения масштаба к существующей визуализации
@@ -548,14 +836,9 @@
         }
         
         // Circular Packing для жанров
-        async function initGenresChart(year = null) {
-            let url = '/api/genres';
-            if (year) {
-                url += `?year=${year}`;
-            }
-
-            const genresData = await fetch(url).then(res => res.json());
-
+        async function initGenresChart() {
+            const genresData = await fetch('/api/genres').then(res => res.json());
+            
             const chart = echarts.init(document.getElementById('genres-chart'));
             
             const option = {
@@ -563,63 +846,60 @@
                 series: {
                     type: 'sunburst',
                     data: genresData.children,
-                    radius: [0, '85%'],
-                    sort: null,
-                    emphasis: {
-                        focus: 'ancestor'
-                    },
+                    radius: [0, '90%'],
                     label: {
                         color: '#c6d4df',
-                        fontSize: 14,
-                        rotate: 'radial'
+                        fontSize: 14
                     },
                     itemStyle: {
                         color: function(params) {
-                            const steamColors = [
-                                '#67c1f5', '#1a9fff', '#4b6b82', 
-                                '#5d7b93', '#66a1c9', '#417a9b',
-                                '#9ecdf2', '#3e6b89', '#7aa8d4'
+                            const colors = [
+                                '#1a9fff', '#67c1f5', '#417a9b', 
+                                '#4b6b82', '#5d7b93', '#6d8ba3'
                             ];
-                            return steamColors[params.dataIndex % steamColors.length];
+                            return colors[params.dataIndex % colors.length];
                         },
                         borderWidth: 2,
-                        borderColor: '#2a475e'
+                        borderColor: '#1b2838'
                     },
                     levels: [
                         {},
                         {
                             r0: '15%',
-                            r: '35%',
-                            label: { rotate: 'tangential', color: '#c7d5e0' },
-                            itemStyle: { borderWidth: 2 }
+                            r: '45%',
+                            itemStyle: {
+                                borderWidth: 2
+                            },
+                            label: {
+                                rotate: 'tangential'
+                            }
                         },
                         {
-                            r0: '35%',
-                            r: '65%',
-                            label: { color: '#acdbf5', align: 'right' },
-                            itemStyle: { borderWidth: 2 }
+                            r0: '45%',
+                            r: '80%',
+                            label: {
+                                align: 'right'
+                            }
                         },
                         {
-                            r0: '65%',
-                            r: '85%',
+                            r0: '80%',
+                            r: '90%',
                             label: {
                                 position: 'outside',
                                 padding: 3,
-                                color: '#67c1f5',
-                                fontWeight: 'bold',
-                                fontSize: 13
+                                silent: false
                             },
-                            itemStyle: { borderWidth: 3 }
+                            itemStyle: {
+                                borderWidth: 3
+                            }
                         }
                     ]
                 }
             };
-
-            const yearSelect = document.getElementById('year-select');
-
+            
             chart.setOption(option);
-
-            window.addEventListener('resize', function () {
+            
+            window.addEventListener('resize', function() {
                 chart.resize();
             });
         }
@@ -643,6 +923,8 @@
             const maxValues = {
                 price: 60,  // Максимальная цена для нормализации
                 reviews: Math.max(game.reviews, 500000),
+                reviewScore: 100,
+                followers: Math.max(game.followers,  500000),
                 reviewScore: 100,
                 followers: Math.max(game.followers, 1000000),
                 avgPlaytime: Math.max(game.avgPlaytime, 100)
@@ -865,9 +1147,6 @@
             simulation.on("tick", () => {
                 node.attr("transform", d => `translate(${d.x},${d.y})`);
             });
-              () => {
-                node.attr("transform", d => `translate(${d.x},${d.y})`);
-            };
             
             // Handle window resize
             window.addEventListener("resize", () => {
@@ -1007,16 +1286,816 @@
                     });
             }
         }
-        document.getElementById('load-genres-btn').addEventListener('click', () => {
-            const yearInput = document.getElementById('year-input').value;
-            const year = yearInput.trim() === '' ? null : parseInt(yearInput);
-            initGenresChart(year);
-        });
-        document.getElementById('year-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('load-genres-btn').click();
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        let playbackSpeed = 100; 
+        let animationInterval = null;
+        let scatterChart = null;
+        let animationFrame = null;
+        let lastFrameTime = 0;
+        let games = []; 
+
+        // функция рендеринга Time-series данных по разным показателям
+        function formatDate(timestamp) {
+          return new Date(timestamp).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+        }
+
+        function getScoreColor(score) {
+          if (score >= 90) return '#22c55e'; // green
+          if (score >= 80) return '#3b82f6'; // blue
+          if (score >= 70) return '#f59e0b'; // amber
+          return '#ef4444'; // red
+        }
+
+        function getGameColor(index) {
+          const colors = [
+            '#3b82f6', // blue
+            '#22c55e', // green
+            '#f59e0b', // amber
+            '#ef4444', // red
+            '#8b5cf6', // purple
+            '#ec4899', // pink
+            '#14b8a6', // teal
+            '#f97316', // orange
+            '#6366f1', // indigo
+            '#84cc16'  // lime
+          ];
+          return colors[index % colors.length];
+        }
+
+        function calculateDomains(games) {
+          let allPlaytimes = [];
+          let allPlayers = [];
+          
+          games.forEach(game => {
+            if (game.history && Array.isArray(game.history)) {
+              game.history.forEach(point => {
+                if (point.avgPlaytime !== undefined) allPlaytimes.push(point.avgPlaytime);
+                if (point.players !== undefined) allPlayers.push(point.players);
+              });
             }
+          });
+          
+          if (allPlaytimes.length === 0) allPlaytimes = [0, 100];
+          if (allPlayers.length === 0) allPlayers = [0, 10000];
+          
+          return {
+            xMin: Math.min(...allPlaytimes) * 0.9,
+            xMax: Math.max(...allPlaytimes) * 1.1,
+            yMin: Math.min(...allPlayers) * 0.9,
+            yMax: 60000
+          };
+        }
+        function initializeChart() {
+          try {
+            const ctx = document.getElementById('scatter-chart');
+            if (!ctx) {
+              console.error('Canvas element not found');
+              updateStatus('Error: Canvas element not found');
+              return;
+            }
+            
+            const domains = calculateDomains(games);
+            console.log('Calculated domains:', domains);
+            
+            const datasets = games.map((game, index) => {
+              return {
+                label: game.name,
+                data: [],
+                backgroundColor: getGameColor(index),
+                borderColor: 'white',
+                borderWidth: 2
+              };
+            });
+            
+            console.log('Created datasets:', datasets);
+            
+            scatterChart = new Chart(ctx, {
+              type: 'bubble',
+              data: {
+                datasets: datasets
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    min: domains.xMin,
+                    max: domains.xMax,
+                    title: {
+                      display: true,
+                      text: 'Average Playtime (hours)',
+                      color: '#c6d4df'
+                    },
+                    ticks: {
+                      color: '#c6d4df'
+                    }
+                  },
+                  y: {
+                    min: domains.yMin,
+                    max: domains.yMax,
+                    title: {
+                      display: true,
+                      text: 'Active Players',
+                      color: '#c6d4df'
+                    },
+                    ticks: {
+                      color: '#c6d4df'
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                      color: '#c6d4df'
+                    }
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        const data = context.raw;
+                        if (!data) return ['No data available'];
+                        
+                        return [
+                          `Game: ${data.gameName || 'Unknown'}`,
+                          `Date: ${data.timeStamp ? formatDate(data.timeStamp) : 'Unknown'}`,
+                          `Average Playtime: ${data.avgPlaytime !== undefined ? data.avgPlaytime.toFixed(2) + ' hours' : 'Unknown'}`,
+                          `Players: ${data.players !== undefined ? data.players.toFixed(0) : 'Unknown'}`,
+                          `Sales: ${data.sales !== undefined ? data.sales.toLocaleString() : 'Unknown'}`,
+                          `Revenue: ${data.revenue !== undefined ? '$' + data.revenue.toLocaleString() : 'Unknown'}`,
+                          `Review Score: ${data.score !== undefined ? data.score : 'Unknown'}`
+                        ];
+                      }
+                    }
+                  }
+                },
+                animation: {
+                  duration: 150,
+                  easing: 'easeOutQuad'
+                },
+                transitions: {
+                  active: {
+                    animation: {
+                      duration: 150
+                    }
+                  }
+                }
+              }
+            });
+            
+            console.log('Chart initialized successfully');
+            updateStatus('Chart initialized successfully');
+            
+            updateChart();
+          } catch (error) {
+            console.error('Error initializing chart:', error);
+            updateStatus(`Error initializing chart: ${error.message}`);
+          }
+        }
+
+        function formatChartData(gameIndex, dataPoint) {
+          if (!dataPoint) {
+            console.warn(`No data point available for game index ${gameIndex}`);
+            return null;
+          }
+          
+          const game = games[gameIndex];
+          return {
+            x: dataPoint.avgPlaytime,
+            y: dataPoint.players,
+            r: dataPoint.sales ? Math.sqrt(dataPoint.sales) / 500 : 10,
+            gameName: game.name,
+            timeStamp: dataPoint.timeStamp,
+            avgPlaytime: dataPoint.avgPlaytime,
+            players: dataPoint.players,
+            sales: dataPoint.sales,
+            revenue: dataPoint.revenue,
+            score: dataPoint.score
+          };
+        }
+
+        function updateChart() {
+          try {
+            if (!scatterChart) {
+              console.error('Chart not initialized');
+              updateStatus('Error: Chart not initialized');
+              return;
+            }
+            games.forEach((game, gameIndex) => {
+              if (!game.history || !Array.isArray(game.history) || game.history.length === 0) {
+                console.warn(`Game ${game.name} has no history data`);
+                scatterChart.data.datasets[gameIndex].data = [];
+                return;
+              }
+              
+              const safeIndex = Math.min(currentIndex, game.history.length - 1);
+              const currentData = game.history[safeIndex];
+              
+              if (!currentData) {
+                console.warn(`No data at index ${safeIndex} for game ${game.name}`);
+                scatterChart.data.datasets[gameIndex].data = [];
+                return;
+              }
+              const chartData = formatChartData(gameIndex, currentData);
+              
+              if (chartData) {
+                scatterChart.data.datasets[gameIndex].data = [chartData];
+              } else {
+                scatterChart.data.datasets[gameIndex].data = [];
+              }
+            });
+            scatterChart.update('none');
+            console.log('Chart updated successfully');
+          } catch (error) {
+            console.error('Error updating chart:', error);
+            updateStatus(`Error updating chart: ${error.message}`);
+          }
+        }
+        function updateMetrics(gameIndex) {
+          try {
+            const game = games[gameIndex];
+            
+            if (!game) {
+              console.error(`Game not found at index ${gameIndex}`);
+              return;
+            }
+            
+            if (!game.history || !Array.isArray(game.history) || game.history.length === 0) {
+              console.warn(`Game ${game.name} has no history data`);
+              clearMetrics();
+              return;
+            }
+            const safeIndex = Math.min(currentIndex, game.history.length - 1);
+            const currentData = game.history[safeIndex];
+            
+            if (!currentData) {
+              console.warn(`No data at index ${safeIndex} for game ${game.name}`);
+              clearMetrics();
+              return;
+            }
+            if (currentData.timeStamp) {
+              document.getElementById('current-date').textContent = formatDate(currentData.timeStamp);
+            } else {
+              document.getElementById('current-date').textContent = 'Date unknown';
+            }
+            document.getElementById('metric-score').textContent = currentData.score !== undefined ? currentData.score : 'N/A';
+            document.getElementById('metric-playtime').textContent = currentData.avgPlaytime !== undefined ? `${currentData.avgPlaytime.toFixed(2)} hours` : 'N/A';
+            document.getElementById('metric-players').textContent = currentData.players !== undefined ? currentData.players.toFixed(0) : 'N/A';
+            document.getElementById('metric-sales').textContent = currentData.revenue !== undefined ? `$${currentData.revenue.toLocaleString()}` : 'N/A';
+            
+            document.getElementById('game-details').innerHTML = `
+              <h3>${game.name || 'Unknown'}</h3>
+              <p>Price: ${game.price !== undefined ? '$' + game.price : 'Unknown'}</p>
+              <p>Developer: ${game.developers ? game.developers.join(', ') : 'Unknown'}</p>
+              <p>Publisher: ${game.publishers ? game.publishers.join(', ') : 'Unknown'}</p>
+              <p>Release Date: ${game.releaseDate || 'Unknown'}</p>
+              <p>Genres: ${game.genres ? game.genres.join(', ') : 'Unknown'}</p>
+            `;
+          } catch (error) {
+            console.error('Error updating metrics:', error);
+            updateStatus(`Error updating metrics: ${error.message}`);
+            clearMetrics();
+          }
+        }
+        function clearMetrics() {
+          document.getElementById('current-date').textContent = 'No data available';
+          document.getElementById('metric-score').textContent = 'N/A';
+          document.getElementById('metric-playtime').textContent = 'N/A';
+          document.getElementById('metric-players').textContent = 'N/A';
+          document.getElementById('metric-sales').textContent = 'N/A';
+          document.getElementById('game-details').innerHTML = '<p>No game data available</p>';
+        }
+
+        function updateStatus(message) {
+          const statusEl = document.getElementById('status-message');
+          if (statusEl) {
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
+          }
+          console.log('Status:', message);
+        }
+
+        function updateUI() {
+          try {
+            document.getElementById('timeline-slider').value = currentIndex;
+            
+            updateChart();
+            
+            if (games.length > 0) {
+              updateMetrics(0);
+            } else {
+              clearMetrics();
+            }
+          } catch (error) {
+            console.error('Error updating UI:', error);
+            updateStatus(`Error updating UI: ${error.message}`);
+          }
+        }
+        function togglePlayback() {
+          isPlaying = !isPlaying;
+          
+          if (isPlaying) {
+            document.getElementById('play-icon').classList.add('hidden');
+            document.getElementById('pause-icon').classList.remove('hidden');
+            document.getElementById('playback-text').textContent = 'Pause';
+            
+            animationInterval = setInterval(() => {
+              currentIndex++;
+              
+              const maxHistoryLength = Math.max(...games.map(game => 
+                game.history && Array.isArray(game.history) ? game.history.length : 0
+              ));
+              
+              if (currentIndex >= maxHistoryLength) {
+                currentIndex = 0;
+                stopPlayback();
+              } else {
+                updateUI();
+              }
+            }, playbackSpeed);
+          } else {
+            stopPlayback();
+          }
+        }
+
+        function stopPlayback() {
+          isPlaying = false;
+          document.getElementById('play-icon').classList.remove('hidden');
+          document.getElementById('pause-icon').classList.add('hidden');
+          document.getElementById('playback-text').textContent = 'Play';
+          
+          if (animationInterval) {
+            clearInterval(animationInterval);
+            animationInterval = null;
+          }
+        }
+
+        function goToStart() {
+          stopPlayback();
+          currentIndex = 0;
+          updateUI();
+        }
+
+        function goToPrevious() {
+          stopPlayback();
+          if (currentIndex > 0) {
+            currentIndex--;
+            updateUI();
+          }
+        }
+
+        function goToNext() {
+          stopPlayback();
+          const maxHistoryLength = Math.max(...games.map(game => 
+            game.history && Array.isArray(game.history) ? game.history.length : 0
+          ));
+          
+          if (currentIndex < maxHistoryLength - 1) {
+            currentIndex++;
+            updateUI();
+          }
+        }
+
+        function goToEnd() {
+          stopPlayback();
+          const maxHistoryLength = Math.max(...games.map(game => 
+            game.history && Array.isArray(game.history) ? game.history.length : 0
+          ));
+          currentIndex = maxHistoryLength - 1;
+          updateUI();
+        }
+
+        function updateSpeed() {
+          playbackSpeed = parseInt(document.getElementById('speed-slider').value);
+          document.getElementById('speed-value').textContent = `${playbackSpeed}ms`;
+          
+          if (isPlaying) {
+            clearInterval(animationInterval);
+            animationInterval = setInterval(() => {
+              currentIndex++;
+              const maxHistoryLength = Math.max(...games.map(game => 
+                game.history && Array.isArray(game.history) ? game.history.length : 0
+              ));
+              
+              if (currentIndex >= maxHistoryLength) {
+                currentIndex = 0;
+                stopPlayback();
+              } else {
+                updateUI();
+              }
+            }, playbackSpeed);
+          }
+        }
+        function updateTimeline() {
+          stopPlayback();
+          currentIndex = parseInt(document.getElementById('timeline-slider').value);
+          updateUI();
+        }
+
+        function selectGame(gameIndex) {
+          updateMetrics(gameIndex);
+        }
+
+        function getMockGames() {
+          return [
+            {
+              "steamId": "1551360",
+              "name": "Forza Horizon 5",
+              "price": 59.99,
+              "reviews": 215189,
+              "reviewsSteam": 197637,
+              "followers": 484129,
+              "avgPlaytime": 89.70242271787208,
+              "reviewScore": 89,
+              "developers": ["Playground Games"],
+              "publishers": ["Xbox Game Studios"],
+              "releaseDate": ["Playground Games"],
+              "publishers": ["Xbox Game Studios"],
+              "releaseDate": "08 Nov, 2021",
+              "genres": ["Racing", "Open World", "Driving", "Multiplayer"],
+              "history": [
+                {
+                  "timeStamp": 1636347600000,
+                  "reviews": 15612,
+                  "price": 59.99,
+                  "score": 75,
+                  "players": 39894,
+                  "avgPlaytime": 2.19,
+                  "sales": 520224,
+                  "revenue": 25750601,
+                  "wishlists": true
+                },
+                {
+                  "timeStamp": 1739267142319,
+                  "reviews": 194971,
+                  "price": 59.99,
+                  "score": 90,
+                  "players": 9224,
+                  "avgPlaytime": 58.83,
+                  "sales": 6467505,
+                  "revenue": 204243317,
+                  "wishlists": true
+                },
+                {
+                  "timeStamp": 1739498934306,
+                  "reviews": 195194,
+                  "price": 59.99,
+                  "score": 90,
+                  "players": 10761,
+                  "avgPlaytime": 58.93,
+                  "sales": 6470105,
+                  "revenue": 204370112,
+                  "wishlists": true
+                }
+              ]
+            },
+            {
+              "steamId": "1222680",
+              "name": "Need for Speed™ Heat",
+              "price": 69.99,
+              "reviews": 45000,
+              "reviewsSteam": 42000,
+              "followers": 250000,
+              "avgPlaytime": 45.5,
+              "reviewScore": 85,
+              "developers": ["Ghost Games"],
+              "publishers": ["Electronic Arts"],
+              "releaseDate": "08 Nov, 2019",
+              "genres": ["Racing", "Action", "Adventure"],
+              "history": [
+                {
+                  "timeStamp": 1636347600000,
+                  "reviews": 10000,
+                  "price": 69.99,
+                  "score": 80,
+                  "players": 25000,
+                  "avgPlaytime": 20.5,
+                  "sales": 300000,
+                  "revenue": 15000000,
+                  "wishlists": true
+                },
+                {
+                  "timeStamp": 1739267142319,
+                  "reviews": 40000,
+                  "price": 69.99,
+                  "score": 85,
+                  "players": 15000,
+                  "avgPlaytime": 40.2,
+                  "sales": 800000,
+                  "revenue": 40000000,
+                  "wishlists": true
+                },
+                {
+                  "timeStamp": 1739498934306,
+                  "reviews": 45000,
+                  "price": 69.99,
+                  "score": 85,
+                  "players": 12000,
+                  "avgPlaytime": 45.5,
+                  "sales": 850000,
+                  "revenue": 42500000,
+                  "wishlists": true
+                }
+              ]
+            }
+          ];
+        }
+
+        // Fetch games data and initialize
+        async function fetchGamesAndInitialize() {
+          try {
+            updateStatus('Fetching game data...');
+            
+            // Try to fetch from API first
+            try {
+              games = await fetch('/api/games').then(res => {
+                if (!res.ok) {
+                  throw new Error(`API returned status ${res.status}`);
+                }
+                return res.json();
+              });
+              updateStatus('Game data fetched from API');
+            } catch (fetchError) {
+              console.warn('Failed to fetch from API, using mock data:', fetchError);
+              updateStatus('Failed to fetch from API, using mock data');
+              games = getMockGames();
+            }
+            
+            console.log('Games data:', games);
+            
+            if (!games || !Array.isArray(games) || games.length === 0) {
+              throw new Error('No valid games data available');
+            }
+            
+            games.forEach(game => {
+              if (game.history && Array.isArray(game.history)) {
+                game.history = game.history.sort((a, b) => a.timeStamp - b.timeStamp);
+              } else {
+                console.warn(`Game ${game.name} has no history data`);
+                game.history = [];
+              }
+            });
+            
+            const maxHistoryLength = Math.max(...games.map(game => 
+              game.history && Array.isArray(game.history) ? game.history.length : 0
+            ));
+            
+            if (maxHistoryLength === 0) {
+              throw new Error('No history data available for any game');
+            }
+
+            // выбор игры на основе дропдаун меню
+            function renderGameDropdown() {
+                const gameSelectionEl = document.getElementById('game-selection');
+                if (!gameSelectionEl) return;
+
+                gameSelectionEl.innerHTML = '<select id="game-dropdown" class="game-dropdown"></select>';
+                const dropdown = document.getElementById('game-dropdown');
+
+                games.forEach((game, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = game.name;
+                    dropdown.appendChild(option);
+                });
+
+                dropdown.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.value);
+                    if (!isNaN(index)) {
+                    selectGame(index);
+                    }
+                });
+                }
+
+            
+            const timelineSlider = document.getElementById('timeline-slider');
+            timelineSlider.max = maxHistoryLength - 1;
+            
+            const allDates = games.flatMap(game => 
+              game.history && Array.isArray(game.history) 
+                ? game.history.map(point => point.timeStamp)
+                : []
+            );
+            
+            if (allDates.length > 0) {
+              const minDate = Math.min(...allDates);
+              const maxDate = Math.max(...allDates);
+              document.getElementById('timeline-start').textContent = formatDate(minDate);
+              document.getElementById('timeline-end').textContent = formatDate(maxDate);
+            } else {
+              document.getElementById('timeline-start').textContent = 'No data';
+              document.getElementById('timeline-end').textContent = 'No data';
+            }
+            
+            initializeChart();
+            
+            updateUI();
+            renderGameDropdown();
+
+            updateStatus('Visualization initialized successfully');
+          } catch (error) {
+            console.error('Error initializing visualization:', error);
+            updateStatus(`Error initializing visualization: ${error.message}`);
+          }
+        }
+
+        document.getElementById('toggle-playback').addEventListener('click', togglePlayback);
+        document.getElementById('go-to-start').addEventListener('click', goToStart);
+        document.getElementById('go-to-previous').addEventListener('click', goToPrevious);
+        document.getElementById('go-to-next').addEventListener('click', goToNext);
+        document.getElementById('go-to-end').addEventListener('click', goToEnd);
+        document.getElementById('speed-slider').addEventListener('input', updateSpeed);
+        document.getElementById('timeline-slider').addEventListener('input', updateTimeline);
+
+        document.addEventListener('DOMContentLoaded', function() {
+          console.log('DOM loaded, initializing game performance visualization...');
+          fetchGamesAndInitialize();
         });
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          console.log('DOM already loaded, initializing game performance visualization...');
+          setTimeout(fetchGamesAndInitialize, 100);
+        }
+
+
+        // НОВЫЙ КОД ДЛЯ TREEMAP
+        // Treemap Visualization
+        let currentTreemapType = "languages";
+        
+        // Initialize treemap
+        async function initTreemap() {
+            await loadTreemapData(currentTreemapType);
+            
+            // Add event listeners for treemap type buttons
+            document.getElementById("languages-btn").addEventListener("click", () => {
+                setActiveTreemapButton("languages-btn");
+                loadTreemapData("languages");
+            });
+            
+            document.getElementById("publishers-btn").addEventListener("click", () => {
+                setActiveTreemapButton("publishers-btn");
+                loadTreemapData("publishers");
+            });
+            
+            document.getElementById("revenue-btn").addEventListener("click", () => {
+                setActiveTreemapButton("revenue-btn");
+                loadTreemapData("revenue");
+            });
+            
+            document.getElementById("players-btn").addEventListener("click", () => {
+                setActiveTreemapButton("players-btn");
+                loadTreemapData("players");
+            });
+        }
+        
+        // Set active button style
+        function setActiveTreemapButton(activeButtonId) {
+            const buttons = ["languages-btn", "publishers-btn", "revenue-btn", "players-btn"];
+            buttons.forEach((btnId) => {
+                const btn = document.getElementById(btnId);
+                if (btnId === activeButtonId) {
+                    btn.className = "btn btn-primary";
+                } else {
+                    btn.className = "btn btn-outline";
+                }
+            });
+        }
+        
+        // Load treemap data and render
+        async function loadTreemapData(type) {
+            try {
+                currentTreemapType = type;
+                
+                // Show loading state
+                document.getElementById("treemap-container").innerHTML = '<div class="loading">Loading treemap data...</div>';
+                
+                // Fetch data from API
+                const response = await fetch(`/api/treemap/${type}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ${type} data`);
+                }
+                
+                const data = await response.json();
+                renderTreemap(data);
+            } catch (error) {
+                console.error("Error loading treemap data:", error);
+                document.getElementById("treemap-container").innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Render treemap visualization
+        function renderTreemap(data) {
+            // Clear previous visualization
+            document.getElementById("treemap-container").innerHTML = "";
+            
+            const container = document.getElementById("treemap-container");
+            const width = container.clientWidth || 928;
+            const height = 600;
+            
+            // Create SVG
+            const svg = d3.create("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height])
+                .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif; overflow: visible;");
+            
+            // Create hierarchy
+            const root = d3.hierarchy(data)
+                .sum(d => d.value)
+                .sort((a, b) => b.value - a.value);
+            
+            // Create treemap layout
+            const treemap = d3.treemap()
+                .size([width, height])
+                .paddingOuter(3)
+                .paddingTop(19)
+                .paddingInner(1)
+                .round(true);
+            
+            treemap(root);
+            
+            // Create color scale
+            const color = d3.scaleOrdinal()
+                .domain(data.children.map(d => d.name))
+                .range(d3.schemeCategory10.map(d => d3.interpolateRgb(d, "white")(0.5)));
+            
+            // Create leaf nodes
+            const leaf = svg.selectAll("g")
+                .data(root.leaves())
+                .join("g")
+                .attr("transform", d => `translate(${d.x0},${d.y0})`);
+            
+            // Add rectangles
+            leaf.append("rect")
+                .attr("id", d => (d.leafUid = `leaf-${d.data.name.replace(/\s+/g, "-")}`))
+                .attr("fill", d => {
+                    while (d.depth > 1) d = d.parent;
+                    return color(d.data.name);
+                })
+                .attr("width", d => d.x1 - d.x0)
+                .attr("height", d => d.y1 - d.y0);
+            
+            // Add clip paths
+            leaf.append("clipPath")
+                .attr("id", d => (d.clipUid = `clip-${d.data.name.replace(/\s+/g, "-")}`))
+                .append("use")
+                .attr("xlink:href", d => `#${d.leafUid}`);
+            
+            // Add text labels
+            leaf.append("text")
+                .attr("clip-path", d => `url(#${d.clipUid})`)
+                .selectAll("tspan")
+                .data(d => [d.data.name, d.value.toLocaleString()])
+                .join("tspan")
+                .attr("x", 3)
+                .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
+                .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
+                .text(d => d);
+            
+            // Add title for tooltips
+            leaf.append("title")
+                .text(d => `${d.data.name}\n${d.value.toLocaleString()}`);
+            
+            // Append to container
+            container.appendChild(svg.node());
+            
+            // Update title based on type
+            let title;
+            switch (currentTreemapType) {
+                case "languages":
+                    title = "Languages Distribution in Games";
+                    break;
+                case "publishers":
+                    title = "Publishers Distribution in Games";
+                    break;
+                case "revenue":
+                    title = "Games by Revenue";
+                    break;
+                case "players":
+                    title = "Games by Player Count";
+                    break;
+                default:
+                    title = "Treemap Visualization";
+            }
+            
+            // Add title to the visualization
+            svg.append("text")
+                .attr("x", 4)
+                .attr("y", 14)
+                .attr("font-weight", "bold")
+                .attr("font-size", 14)
+                .attr("fill", "#c6d4df")
+                .text(title);
+        }
     </script>
 </body>
 </html>
