@@ -11,10 +11,12 @@ This project visualises data of various games from Steam and analyses different 
 - **Diana Tsoi (DS-02)**  
   Checkpoint 1:  
   - Made Exploratory Data Analysis (EDA) and analyzed trends.
+
+  Checkpoint 2:  
+  - Wrote part of backend and frontend.
 - **Victor Mazanov (DS-02)**  
   Checkpoint 1:  
   - Made a list of possible trends, scraped data from the websites.  
-
 
   Checkpoint 2:  
   - Wrote part of backend and frontend.
@@ -86,3 +88,9 @@ This project visualises data of various games from Steam and analyses different 
     ```
 
 - If you face any issues with missing files, ensure that the `games.json` file is located in the [scrape](http://_vscodecontentref_/4) directory.
+
+5. **Command for project running**
+
+```sh
+docker compose up
+```
