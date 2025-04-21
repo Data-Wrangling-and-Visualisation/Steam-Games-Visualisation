@@ -1,6 +1,8 @@
 # Steam-Games-Visualisation
 This project visualises data of various games from Steam and analyses different trends in them.
 
+*More information about the project can be found in Proposal.pdf and Project_Presentation.pdf files*
+
 ## Team:
 - **Denis Troegubov (DS-01)**  
   Checkpoint 1:  
