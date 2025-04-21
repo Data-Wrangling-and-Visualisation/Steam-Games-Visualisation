@@ -92,5 +92,5 @@ This project visualises data of various games from Steam and analyses different 
 5. **Command for project running**
 
 ```sh
-docker compose up
+docker-compose up -d
 ```
