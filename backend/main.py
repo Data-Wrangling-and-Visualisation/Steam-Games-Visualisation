@@ -15,9 +15,9 @@ app = FastAPI()
 
 BASE_DIR = Path(__file__).parent
 
-DATA_FILE = BASE_DIR / 'scrape' / "games.json"
-LARGE_DATA_FILE = BASE_DIR / 'scrape' / "games_large.json"
-FRONTEND_DIR = BASE_DIR.parent / 'frontend'
+DATA_FILE = BASE_DIR / "games.json"
+LARGE_DATA_FILE = BASE_DIR / "games_large.json"
+FRONTEND_DIR = BASE_DIR
 
 def load_games_data() -> List[Dict[str, Any]]:
     """Loads game data from a JSON file"""
